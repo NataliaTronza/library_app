@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#F1E7D3" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Бібліотека" />
+<meta name="application-name" content="Бібліотека" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<title>Моя бібліотека</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F1E7D3; --paper:#FBF6EA; --card:#FFFDF7;
+  --ink:#3B3049; --muted:#8B7F73; --line:#E0D3BB;
+  --accent:#6B5B95; --accent-soft:#EDE7F6; --accent-ink:#FFFFFF;
+  --gold:#C99A2E;
+  --plank1:#5A4032; --plank2:#3E2B21; --plank3:#241812;
+  --shadow:rgba(80,60,40,.18);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;overscroll-behavior:none}
+body{
+  background:var(--bg);
+  background-image:var(--bgimg,none);
+  background-size:cover;background-position:center;background-attachment:fixed;
+  font-family:'Nunito',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);
+  min-height:100vh;padding-bottom:90px;
+  -webkit-user-select:none;user-select:none;
+  -webkit-text-size-adjust:100%;
+}
+input,textarea{-webkit-user-select:text;user-select:text}
+.selectable{-webkit-user-select:text;user-select:text}
+.serif{font-family:'Fraunces',Georgia,"Times New Roman",serif}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+
+header{padding:calc(18px + env(safe-area-inset-top)) 0 6px}
+.profile{
+  background:var(--card);border:1px solid var(--line);border-radius:20px;
+  padding:16px;box-shadow:0 6px 18px var(--shadow);
+}
+.profile-top{display:flex;align-items:center;gap:12px}
+.avatar{
+  width:52px;height:52px;border-radius:50%;flex-shrink:0;
+  background:var(--accent-soft);display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--accent);
+}
+.hello{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.6px}
+.libname{font-size:22px;font-weight:700;margin:0;line-height:1.15}
+.stats{display:flex;gap:8px;margin-top:14px}
+.stat{
+  flex:1;background:var(--paper);border:1px solid var(--line);border-radius:14px;
+  padding:10px 6px;text-align:center;
+}
+.stat b{display:block;font-family:'Fraunces',Georgia,serif;font-size:20px;line-height:1.1;color:var(--accent)}
+.stat span{font-size:11px;color:var(--muted);font-weight:700}
+.stat.coins b{color:var(--gold)}
+
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:16px 0 12px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  border:1px solid var(--line);background:var(--card);color:var(--muted);
+  font-family:'Nunito',system-ui,sans-serif;font-weight:700;font-size:13px;
+  padding:8px 16px;border-radius:999px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
+.tab.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+.shelf-unit{margin-bottom:6px}
+.shelf-row{display:flex;align-items:flex-end;gap:10px;padding:0 10px;min-height:128px}
+.plank{
+  height:14px;border-radius:4px;margin-bottom:14px;
+  background-image:var(--plankimg,none),linear-gradient(180deg,var(--plank1) 0%,var(--plank2) 55%,var(--plank3) 100%);
+  background-size:cover;background-position:center;
+  box-shadow:0 6px 12px var(--shadow),inset 0 2px 0 rgba(255,255,255,.35);
+}
+.book{
+  width:82px;height:120px;border-radius:3px 6px 6px 3px;flex-shrink:0;cursor:pointer;
+  position:relative;overflow:hidden;
+  box-shadow:2px 3px 8px var(--shadow),inset 3px 0 0 rgba(0,0,0,.14),inset 5px 0 0 rgba(255,255,255,.18);
+  transition:transform .18s ease,box-shadow .18s ease;
+  display:flex;flex-direction:column;justify-content:space-between;padding:10px 8px 8px 12px;
+}
+.book:hover,.book:active{transform:translateY(-6px);box-shadow:3px 10px 16px var(--shadow),inset 3px 0 0 rgba(0,0,0,.14)}
+.book img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.bk-title{position:relative;font-family:'Fraunces',Georgia,serif;font-size:11px;font-weight:700;color:#FFF6E4;line-height:1.15;text-shadow:0 1px 3px rgba(0,0,0,.45);max-height:58px;overflow:hidden}
+.bk-author{position:relative;font-size:9px;color:rgba(255,246,228,.9);font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.45)}
+.book.has-cover .bk-title,.book.has-cover .bk-author{display:none}
+.bk-badge{
+  position:absolute;top:5px;right:5px;width:17px;height:17px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:9px;background:rgba(255,255,255,.92);
+}
+.decor{width:72px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;pointer-events:none}
+.decor svg{filter:drop-shadow(2px 4px 5px var(--shadow))}
+.empty-note{color:var(--muted);font-size:14px;font-weight:600;padding:38px 12px;text-align:center;width:100%}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--accent);color:var(--accent-ink);border:none;border-radius:14px;
+  font-family:'Nunito',system-ui,sans-serif;font-weight:700;font-size:15px;padding:13px 18px;cursor:pointer;width:100%;
+}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.btn.danger{background:transparent;color:#A0453C;border:1.5px solid #E0BDB8;font-size:14px;padding:12px 14px}
+.btn.small{width:auto;font-size:13px;padding:10px 14px;border-radius:12px}
+
+.section-title{font-family:'Fraunces',Georgia,serif;font-size:19px;font-weight:700;margin:0 0 12px}
+.panel{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;
+  box-shadow:0 4px 14px var(--shadow);
+}
+.row-between{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:.5px}
+
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.swatch{
+  border:2px solid var(--line);border-radius:14px;padding:10px 8px;cursor:pointer;
+  display:flex;flex-direction:column;gap:7px;align-items:center;background:var(--paper);
+}
+.swatch.on{border-color:var(--accent)}
+.dots{display:flex;gap:4px}
+.dot{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.08)}
+.swatch span{font-size:11px;font-weight:700;color:var(--muted)}
+
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
+.shop-item{
+  background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:10px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
+}
+.shop-item .art{height:62px;display:flex;align-items:flex-end}
+.shop-item .nm{font-size:12px;font-weight:700}
+.shop-item .price{font-size:12px;font-weight:700;color:var(--gold)}
+.chip{
+  font-size:11px;font-weight:700;padding:6px 12px;border-radius:999px;border:none;cursor:pointer;
+  background:var(--accent);color:var(--accent-ink);font-family:'Nunito',system-ui,sans-serif;
+}
+.chip.out{background:var(--accent-soft);color:var(--accent)}
+.chip:disabled{opacity:.45}
+
+.backdrop{
+  position:fixed;inset:0;background:rgba(48,38,30,.5);z-index:60;
+  display:flex;align-items:flex-end;justify-content:center;animation:fade .15s ease;
+}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{
+  background:var(--card);width:100%;max-width:520px;border-radius:24px 24px 0 0;
+  padding:20px 18px calc(24px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;
+  animation:up .25s cubic-bezier(.2,.9,.3,1.05);
+}
+@keyframes up{from{transform:translateY(28px);opacity:0}to{transform:translateY(0);opacity:1}}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.sheet-head h3{font-family:'Fraunces',Georgia,serif;font-size:19px;margin:0}
+.x{cursor:pointer;color:var(--muted);flex-shrink:0}
+input,textarea{
+  width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);
+  background:var(--paper);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;font-size:15px;
+  outline:none;margin-bottom:10px;display:block;
+}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:none}
+::placeholder{color:#B3A695}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.filebtn{
+  display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;
+  background:var(--paper);border:1.5px dashed var(--accent);border-radius:14px;
+  padding:13px 16px;margin-bottom:10px;
+  font-family:'Nunito',system-ui,sans-serif;font-weight:700;font-size:14px;color:var(--accent);
+}
+.filebtn:active{background:var(--accent-soft)}
+.filebtn svg{flex-shrink:0}
+.filebtn .fname{
+  margin-left:auto;font-size:12px;font-weight:600;color:var(--muted);
+  max-width:44%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+.filebtn.filled{border-style:solid}
+.preview{
+  width:100%;height:96px;border-radius:14px;border:1px solid var(--line);
+  background-size:cover;background-position:center;margin-bottom:10px;
+}
+.preview.contain{background-size:contain;background-repeat:no-repeat;background-color:var(--paper)}
+.shop-item .art img{max-height:62px;max-width:76px;object-fit:contain;filter:drop-shadow(2px 4px 5px var(--shadow))}
+.shop-item .del{
+  background:none;border:none;cursor:pointer;font-size:11px;font-weight:700;
+  color:var(--muted);font-family:'Nunito',system-ui,sans-serif;padding:2px;
+}
+.add-item-card{
+  border:1.5px dashed var(--accent);background:transparent;border-radius:16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  min-height:132px;cursor:pointer;color:var(--accent);
+  font-family:'Nunito',system-ui,sans-serif;font-weight:700;font-size:12px;text-align:center;padding:10px;
+}
+.seg{display:flex;gap:6px;margin-bottom:14px}
+.seg button{
+  flex:1;padding:11px 4px;border-radius:12px;border:1px solid var(--line);background:var(--paper);
+  font-family:'Nunito',system-ui,sans-serif;font-weight:700;font-size:12px;color:var(--muted);cursor:pointer;
+}
+.seg button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+.detail-cover{
+  width:104px;height:152px;border-radius:4px 8px 8px 4px;overflow:hidden;flex-shrink:0;position:relative;
+  box-shadow:3px 5px 14px var(--shadow);display:flex;flex-direction:column;justify-content:space-between;padding:12px 10px 10px 14px;
+}
+.detail-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.meta{font-size:12px;color:var(--muted);font-weight:700;margin-top:6px}
+.note-box{
+  background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px;
+  font-size:14px;line-height:1.5;margin:14px 0;
+}
+.reward{
+  background:var(--accent-soft);border-radius:14px;padding:16px;text-align:center;
+  font-weight:700;font-size:15px;color:var(--accent);margin-bottom:14px;
+}
+
+nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  background:var(--card);border-top:1px solid var(--line);
+  display:flex;padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+  box-shadow:0 -4px 16px var(--shadow);
+}
+nav button{
+  flex:1;background:none;border:none;cursor:pointer;padding:6px 2px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:'Nunito',system-ui,sans-serif;font-size:10px;font-weight:700;color:var(--muted);
+}
+nav button.on{color:var(--accent)}
+.err{color:#A0453C;font-size:13px;font-weight:700;padding:8px 0}
+.hidden{display:none!important}
+.small-note{font-size:12px;color:var(--muted);line-height:1.45}
+</style>
+</head>
+<body>
+
+<section id="viewShelf">
+  <header class="wrap">
+    <div class="profile">
+      <div class="profile-top">
+        <div class="avatar">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2.5Z"/><path d="M6 17h13"/></svg>
+        </div>
+        <div>
+          <div class="hello">МОЯ ЧИТАЦЬКА ПОЛИЦЯ</div>
+          <h1 class="libname serif">Бібліотека</h1>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="sRead">0</b><span>прочитано</span></div>
+        <div class="stat"><b id="sPlanned">0</b><span>у планах</span></div>
+        <div class="stat coins"><b id="sCoins">0</b><span>монет</span></div>
+      </div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </header>
+  <div class="wrap"><div id="err" class="err hidden"></div></div>
+  <div id="shelves"></div>
+  <div class="wrap" style="padding-top:18px"><button class="btn ghost" id="quickAdd">+ Додати книгу</button></div>
+</section>
+
+<section id="viewShop" class="wrap hidden" style="padding-top:20px">
+  <div class="panel">
+    <div class="row-between">
+      <div style="flex:1">
+        <div class="section-title" style="margin-bottom:4px">Крамниця</div>
+        <div class="small-note">За кожну прочитану книгу — <b>15 монет</b>.</div>
+      </div>
+      <div class="stat coins" style="flex:0 0 auto;min-width:78px"><b id="sCoins2">0</b><span>монет</span></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="label">ПРЕДМЕТИ НА ПОЛИЦЮ</div>
+    <div class="shop-grid" id="shopGrid"></div>
+  </div>
+</section>
+
+<section id="viewSettings" class="wrap hidden" style="padding-top:20px">
+  <div class="panel">
+    <div class="section-title">Тема</div>
+    <div class="themes" id="themeGrid"></div>
+  </div>
+  <div class="panel">
+    <div class="section-title">Власні картинки</div>
+    <div class="label">ФОН ЗАСТОСУНКУ</div>
+    <div class="preview hidden" id="bgPreview"></div>
+    <label class="filebtn" for="bgUpload">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      Вибрати картинку
+      <span class="fname" id="bgName"></span>
+    </label>
+    <input type="file" accept="image/*" id="bgUpload" />
+    <button class="btn ghost small" id="bgClear">Прибрати фон</button>
+
+    <div class="label" style="margin-top:20px">ТЕКСТУРА ПОЛИЦІ</div>
+    <div class="preview hidden" id="plankPreview"></div>
+    <label class="filebtn" for="plankUpload">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      Вибрати картинку
+      <span class="fname" id="plankName"></span>
+    </label>
+    <input type="file" accept="image/*" id="plankUpload" />
+    <button class="btn ghost small" id="plankClear">Прибрати текстуру</button>
+    <p class="small-note" style="margin-top:14px">Картинки зберігаються прямо в застосунку — інтернет не потрібен.</p>
+  </div>
+  <div class="panel">
+    <div class="section-title">Резервна копія</div>
+    <button class="btn ghost small" id="exportBtn">Зберегти копію бібліотеки</button>
+    <div style="height:10px"></div>
+    <label class="filebtn" for="importFile" style="margin-bottom:0">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v12M8 12l4 4 4-4"/><path d="M4 18v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      Відновити з копії
+    </label>
+    <input type="file" accept="application/json,.json" id="importFile" />
+    <p class="small-note" style="margin-top:12px">Копія — це файл із усіма книгами, монетами й предметами. Зберігай його раз на кілька місяців: якщо зміниш телефон або почистиш дані браузера, бібліотеку можна буде відновити.</p>
+  </div>
+  <div class="panel">
+    <div class="section-title">Встановити на телефон</div>
+    <p class="small-note">Якщо ти бачиш цей текст у браузері, а не в застосунку — відкрий меню Chrome (⋮) і вибери «Встановити застосунок» або «Додати на головний екран».</p>
+    <p class="small-note" style="margin-top:10px">Після встановлення бібліотека відкривається з іконки на робочому столі, на весь екран і без інтернету.</p>
+    <div class="row-between" style="margin-top:14px">
+      <span class="small-note" style="font-weight:700">Стан офлайн-режиму</span>
+      <span class="small-note" id="swState" style="font-weight:700">перевіряю…</span>
+    </div>
+  </div>
+</section>
+
+<nav>
+  <button id="navShelf" class="on">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2.5Z"/><path d="M6 17h13"/></svg>
+    Полиця
+  </button>
+  <button id="navAdd">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+    Додати
+  </button>
+  <button id="navShop">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 7h18l-1.5 12.5a2 2 0 0 1-2 1.5H6.5a2 2 0 0 1-2-1.5Z"/><path d="M8.5 7a3.5 3.5 0 0 1 7 0"/></svg>
+    Крамниця
+  </button>
+  <button id="navSettings">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="3.4"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3"/></svg>
+    Налаштування
+  </button>
+</nav>
+
+<div id="modalRoot"></div>
+
+<script>
+const THEMES = {
+  lumo:{name:"Лумо", vars:{"--bg":"#F1E7D3","--paper":"#FBF6EA","--card":"#FFFDF7","--ink":"#3B3049","--muted":"#8B7F73","--line":"#E0D3BB","--accent":"#6B5B95","--accent-soft":"#EDE7F6","--accent-ink":"#FFFFFF","--gold":"#C99A2E","--plank1":"#5A4032","--plank2":"#3E2B21","--plank3":"#241812","--shadow":"rgba(80,60,40,.18)"}},
+  sage:{name:"Шавлія", vars:{"--bg":"#E4EBE0","--paper":"#F5F9F2","--card":"#FCFEFA","--ink":"#2F3D33","--muted":"#7C8B79","--line":"#D3DFCD","--accent":"#4E7A5B","--accent-soft":"#DFEDE2","--accent-ink":"#FFFFFF","--gold":"#B78C34","--plank1":"#54402F","--plank2":"#3A2A1E","--plank3":"#221811","--shadow":"rgba(50,70,55,.16)"}},
+  rose:{name:"Пудра", vars:{"--bg":"#F6E7E4","--paper":"#FDF4F2","--card":"#FFFBFA","--ink":"#4A3238","--muted":"#9A8079","--line":"#EBD6D1","--accent":"#A85C6B","--accent-soft":"#F7E3E6","--accent-ink":"#FFFFFF","--gold":"#C8912F","--plank1":"#5B4034","--plank2":"#402B22","--plank3":"#261914","--shadow":"rgba(90,60,60,.16)"}},
+  sky:{name:"Ранок", vars:{"--bg":"#E3ECF3","--paper":"#F3F8FC","--card":"#FCFDFF","--ink":"#2C3A47","--muted":"#7A8894","--line":"#D5E2EC","--accent":"#3F6E93","--accent-soft":"#E1EDF6","--accent-ink":"#FFFFFF","--gold":"#C09330","--plank1":"#513D31","--plank2":"#382820","--plank3":"#201710","--shadow":"rgba(50,70,90,.16)"}},
+  night:{name:"Вечір", vars:{"--bg":"#221D2E","--paper":"#2C2540","--card":"#302947","--ink":"#F0E8DC","--muted":"#A79BC0","--line":"#413764","--accent":"#B79AE8","--accent-soft":"#3A3059","--accent-ink":"#221D2E","--gold":"#E0B750","--plank1":"#4A362A","--plank2":"#33241B","--plank3":"#1D140F","--shadow":"rgba(0,0,0,.45)"}},
+  cocoa:{name:"Какао", vars:{"--bg":"#EDE2D6","--paper":"#F8F1E7","--card":"#FFFBF5","--ink":"#42342A","--muted":"#8C7663","--line":"#E1D0BC","--accent":"#8A5A3B","--accent-soft":"#F1E2D5","--accent-ink":"#FFFFFF","--gold":"#B98C2C","--plank1":"#5E432F","--plank2":"#42301F","--plank3":"#281C13","--shadow":"rgba(80,55,35,.18)"}},
+};
+
+const ART = {
+  plant:`<svg width="52" height="64" viewBox="0 0 52 64"><path d="M18 42h16l-2 20H20z" fill="#B9754A"/><path d="M18 42h16l-1 5H19z" fill="#9C5F3A"/><path d="M26 42c0-10-8-14-12-20 8 1 12 6 12 12z" fill="#5C8A50"/><path d="M26 42c0-12 7-17 13-22-3 9-6 15-13 22z" fill="#6FA05F"/><path d="M26 42c0-7 3-11 6-15-1 7-2 11-6 15z" fill="#4E7A45"/></svg>`,
+  lamp:`<svg width="46" height="62" viewBox="0 0 46 62"><ellipse cx="23" cy="58" rx="14" ry="4" fill="#7A5C3E"/><path d="M20 34h6v22h-6z" fill="#8A6A46"/><path d="M10 34 16 12h14l6 22z" fill="#E9C46A"/><path d="M10 34 16 12h5l-4 22z" fill="#F2D68F"/></svg>`,
+  cat:`<svg width="56" height="48" viewBox="0 0 56 48"><path d="M12 46c-4-8-2-18 6-22 7-3 16-2 21 4 5 6 5 14 2 18z" fill="#7C6B8A"/><path d="M17 24l-2-10 9 5z" fill="#7C6B8A"/><path d="M35 23l6-9 1 10z" fill="#7C6B8A"/><circle cx="22" cy="33" r="2" fill="#2B2438"/><circle cx="33" cy="33" r="2" fill="#2B2438"/><path d="M25 38h5l-2.5 3z" fill="#D89AA5"/></svg>`,
+  tea:`<svg width="52" height="44" viewBox="0 0 52 44"><path d="M8 18h28v14a8 8 0 0 1-8 8H16a8 8 0 0 1-8-8z" fill="#F3EDE1"/><path d="M8 18h28v5H8z" fill="#C9A227"/><path d="M36 22h6a5 5 0 0 1 0 10h-6" fill="none" stroke="#F3EDE1" stroke-width="4"/><path d="M17 12c0-3 3-3 3-6M25 12c0-3 3-3 3-6" stroke="#C6BBA9" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+  crystal:`<svg width="42" height="60" viewBox="0 0 42 60"><ellipse cx="21" cy="56" rx="13" ry="4" fill="#6B5B95"/><path d="M21 6 34 34 21 52 8 34z" fill="#D9B8E8"/><path d="M21 6 34 34 21 52z" fill="#B990D6"/><path d="M21 6 8 34l13 18z" fill="#EBD5F5"/></svg>`,
+  bust:`<svg width="44" height="62" viewBox="0 0 44 62"><path d="M10 58h24l-2-8H12z" fill="#A99374"/><path d="M14 50c0-8-2-12 0-18 2-7 14-8 16-1 2 6 0 11-2 19z" fill="#C7B393"/><path d="M18 28c2-2 6-2 8 0" stroke="#9A8467" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+  clock:`<svg width="46" height="56" viewBox="0 0 46 56"><rect x="8" y="12" width="30" height="38" rx="6" fill="#9C6B45"/><circle cx="23" cy="30" r="11" fill="#F5EFE2"/><path d="M23 23v7l5 3" stroke="#4A3B2C" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M14 12c0-5 4-8 9-8s9 3 9 8z" fill="#B07E52"/></svg>`,
+  candle:`<svg width="36" height="58" viewBox="0 0 36 58"><ellipse cx="18" cy="54" rx="11" ry="4" fill="#B08A5E"/><rect x="10" y="20" width="16" height="34" rx="4" fill="#F2E7D3"/><rect x="10" y="20" width="6" height="34" fill="#FBF5E9"/><path d="M18 20c-4-4 0-8 0-12 2 4 6 8 0 12z" fill="#E9A94B"/></svg>`,
+  globe:`<svg width="50" height="58" viewBox="0 0 50 58"><path d="M18 54h14l-3-8h-8z" fill="#8A6A46"/><circle cx="25" cy="26" r="18" fill="#7FA8C4"/><path d="M14 18c6 3 14 3 21-1M12 30c8 4 18 3 25-2" stroke="#5C8A50" stroke-width="3" fill="none"/><path d="M25 8c-6 8-6 28 0 36" stroke="#EAF1F5" stroke-width="1.6" fill="none"/></svg>`,
+  frame:`<svg width="52" height="56" viewBox="0 0 52 56"><rect x="6" y="10" width="40" height="42" rx="4" fill="#A9743F"/><rect x="12" y="16" width="28" height="30" rx="2" fill="#EFE3CE"/><circle cx="21" cy="28" r="5" fill="#C9A227"/><path d="M14 44l9-10 6 6 5-4 4 8z" fill="#8AA97C"/></svg>`,
+  owl:`<svg width="46" height="52" viewBox="0 0 46 52"><path d="M23 48c-9 0-15-7-15-16S14 8 23 8s15 15 15 24-6 16-15 16z" fill="#9C8065"/><circle cx="17" cy="24" r="6" fill="#F5EFE2"/><circle cx="29" cy="24" r="6" fill="#F5EFE2"/><circle cx="17" cy="24" r="2.6" fill="#3B3049"/><circle cx="29" cy="24" r="2.6" fill="#3B3049"/><path d="M23 29l-3 4h6z" fill="#D89A4B"/></svg>`,
+  stack:`<svg width="54" height="46" viewBox="0 0 54 46"><rect x="8" y="32" width="38" height="10" rx="2" fill="#7A2E2E"/><rect x="11" y="22" width="32" height="10" rx="2" fill="#3F5B45"/><rect x="14" y="12" width="27" height="10" rx="2" fill="#2E4A6B"/><path d="M8 36h38M11 26h32M14 16h27" stroke="rgba(255,255,255,.35)" stroke-width="1.4"/></svg>`,
+};
+const SHOP = [
+  {id:"plant",name:"Рослина",price:30},
+  {id:"tea",name:"Чашка чаю",price:30},
+  {id:"candle",name:"Свічка",price:45},
+  {id:"stack",name:"Стосик книг",price:45},
+  {id:"lamp",name:"Лампа",price:60},
+  {id:"frame",name:"Фоторамка",price:60},
+  {id:"crystal",name:"Кристал",price:75},
+  {id:"clock",name:"Годинник",price:75},
+  {id:"cat",name:"Кіт",price:90},
+  {id:"owl",name:"Сова",price:90},
+  {id:"globe",name:"Глобус",price:110},
+  {id:"bust",name:"Погруддя",price:120},
+];
+const COINS_PER_BOOK = 15;
+const COVER_COLORS = ["#7A2E2E","#3F5B45","#B08A2E","#2E4A6B","#5B3358","#2E6B63","#8C4A2F","#4A5D7E","#6B5B95","#A8623C"];
+const STATUSES = {planned:"Хочу прочитати", reading:"Читаю", read:"Прочитано"};
+const STORAGE_KEY = "library-data-v2";
+
+let state = {books:[], coins:0, owned:[], placed:[], custom:[], theme:"lumo", bgImg:null, plankImg:null};
+let filter = "all";
+let saveTimer = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => {const d=document.createElement("div"); d.textContent = s==null?"":s; return d.innerHTML;};
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const hashStr = s => {let h=0; for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;} return Math.abs(h);};
+const coverColor = b => COVER_COLORS[hashStr(b.title + b.id) % COVER_COLORS.length];
+const todayStr = () => new Date().toLocaleDateString("uk-UA",{day:"numeric",month:"long",year:"numeric"});
+
+const hasClaudeStorage = () => typeof window.storage !== "undefined" && window.storage;
+async function readStorage(){
+  if(hasClaudeStorage()){ const r = await window.storage.get(STORAGE_KEY,false); return r&&r.value?r.value:null; }
+  return localStorage.getItem(STORAGE_KEY);
+}
+async function writeStorage(v){
+  if(hasClaudeStorage()){ return !!(await window.storage.set(STORAGE_KEY,v,false)); }
+  localStorage.setItem(STORAGE_KEY,v); return true;
+}
+function showErr(msg){
+  const el = $("err");
+  if(!msg){ el.classList.add("hidden"); return; }
+  el.textContent = msg; el.classList.remove("hidden");
+}
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    try{
+      const ok = await writeStorage(JSON.stringify(state));
+      showErr(ok ? null : "Не вдалося зберегти зміни.");
+    }catch(e){
+      showErr(e && e.name === "QuotaExceededError"
+        ? "Пам'ять заповнена. Спробуйте меншу картинку фону."
+        : "Не вдалося зберегти зміни.");
+    }
+  },250);
+}
+async function load(){
+  try{
+    const raw = await readStorage();
+    if(raw) state = Object.assign(state, JSON.parse(raw));
+  }catch(e){}
+  if(!Array.isArray(state.custom)) state.custom = [];
+  applyTheme(); renderAll(); syncUploadUI();
+}
+
+function applyTheme(){
+  const t = THEMES[state.theme] || THEMES.lumo;
+  Object.entries(t.vars).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+  document.documentElement.style.setProperty("--bgimg", state.bgImg ? "url("+state.bgImg+")" : "none");
+  document.documentElement.style.setProperty("--plankimg", state.plankImg ? "url("+state.plankImg+")" : "none");
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute("content", t.vars["--bg"]);
+}
+
+function renderAll(){ renderStats(); renderTabs(); renderShelves(); renderShop(); renderThemes(); }
+
+function renderStats(){
+  $("sRead").textContent = state.books.filter(b=>b.status==="read").length;
+  $("sPlanned").textContent = state.books.filter(b=>b.status!=="read").length;
+  $("sCoins").textContent = state.coins;
+  $("sCoins2").textContent = state.coins;
+}
+
+function renderTabs(){
+  const c = {
+    all: state.books.length,
+    reading: state.books.filter(b=>b.status==="reading").length,
+    planned: state.books.filter(b=>b.status==="planned").length,
+    read: state.books.filter(b=>b.status==="read").length,
+  };
+  const defs = [["all","Усі"],["reading","Читаю"],["planned","Хочу прочитати"],["read","Прочитані"]];
+  $("tabs").innerHTML = defs.map(([k,label]) =>
+    `<button class="tab ${filter===k?"active":""}" data-f="${k}">${label} (${c[k]})</button>`).join("");
+  $("tabs").querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{
+    filter = b.dataset.f; renderTabs(); renderShelves();
+  });
+}
+
+function perRow(){
+  const w = Math.min(window.innerWidth, 760) - 32 - 20;
+  return Math.max(2, Math.floor((w + 10) / 92));
+}
+
+function bookEl(b){
+  const el = document.createElement("div");
+  el.className = "book" + (b.cover ? " has-cover" : "");
+  const c = coverColor(b);
+  el.style.background = "linear-gradient(100deg,"+c+" 0%,"+c+" 78%,rgba(0,0,0,.28) 100%)";
+  const badge = b.status==="reading" ? "📖" : (b.status==="planned" ? "🔖" : "");
+  el.innerHTML = (b.cover ? '<img src="'+b.cover+'" alt="">' : "")
+    + '<div class="bk-title">'+esc(b.title)+'</div>'
+    + '<div class="bk-author">'+esc(b.author||"")+'</div>'
+    + (badge ? '<div class="bk-badge">'+badge+'</div>' : "");
+  el.onclick = () => openDetail(b.id);
+  return el;
+}
+
+function renderShelves(){
+  const host = $("shelves");
+  host.innerHTML = "";
+  const books = state.books.filter(b => filter==="all" ? true : b.status===filter);
+  const decor = state.placed.slice();
+  const cap = perRow();
+
+  if(books.length===0 && decor.length===0){
+    const unit = document.createElement("div");
+    unit.className = "shelf-unit wrap";
+    unit.innerHTML = '<div class="shelf-row"><div class="empty-note">'
+      + (filter==="all" ? "Полиця порожня. Додайте першу книгу — вона стане сюди."
+                        : "У цьому розділі поки нічого немає.")
+      + '</div></div><div class="plank"></div>';
+    host.appendChild(unit);
+    return;
+  }
+
+  const rows = [];
+  const decorPerRowMax = Math.max(1, Math.min(2, cap - 1));
+  let nRows = Math.max(1, Math.ceil((books.length + decor.length) / cap));
+
+  // розкласти предмети по рядах, додаючи ряди, якщо книгам бракує місця
+  let layout;
+  for(let guard = 0; guard < 60; guard++){
+    layout = Array.from({length:nRows}, ()=>[]);
+    decor.forEach((id, i) => {
+      let r = i % nRows;
+      let hops = 0;
+      while(layout[r].length >= decorPerRowMax && hops < nRows){ r = (r+1) % nRows; hops++; }
+      layout[r].push(id);
+    });
+    const slots = layout.reduce((sum, d) => sum + Math.max(0, cap - d.length), 0);
+    if(slots >= books.length) break;
+    nRows++;
+  }
+
+  let bi = 0;
+  layout.forEach(rowDecor => {
+    const room = Math.max(0, cap - rowDecor.length);
+    const rowBooks = books.slice(bi, bi + room);
+    bi += rowBooks.length;
+    rows.push({books:rowBooks, decor:rowDecor});
+  });
+  while(bi < books.length){
+    const rowBooks = books.slice(bi, bi + cap);
+    bi += rowBooks.length;
+    rows.push({books:rowBooks, decor:[]});
+  }
+  while(rows.length < 3) rows.push({books:[], decor:[]});
+
+  rows.forEach((r, rowIndex)=>{
+    const unit = document.createElement("div");
+    unit.className = "shelf-unit wrap";
+    const row = document.createElement("div");
+    row.className = "shelf-row";
+
+    // предмети займають сталі позиції серед книг, а не завжди край полиці
+    const slots = r.books.map(b => ({type:"book", data:b}));
+    r.decor.forEach(id => {
+      const pos = hashStr(id + "|" + rowIndex) % (slots.length + 1);
+      slots.splice(pos, 0, {type:"decor", data:id});
+    });
+
+    slots.forEach(slot=>{
+      if(slot.type === "book"){ row.appendChild(bookEl(slot.data)); return; }
+      const item = allItems().find(i=>i.id===slot.data);
+      if(!item) return;
+      const d = document.createElement("div");
+      d.className = "decor";
+      d.innerHTML = item.img
+        ? '<img src="'+item.img+'" alt="" style="max-width:72px;max-height:110px;object-fit:contain;filter:drop-shadow(2px 4px 5px var(--shadow))">'
+        : (ART[item.id] || "");
+      row.appendChild(d);
+    });
+
+    const plank = document.createElement("div");
+    plank.className = "plank";
+    unit.appendChild(row);
+    unit.appendChild(plank);
+    host.appendChild(unit);
+  });
+}
+
+function allItems(){ return SHOP.concat(state.custom); }
+function itemArt(item){
+  if(item.img) return '<img src="'+item.img+'" alt="">';
+  return ART[item.id] || "";
+}
+
+function renderShop(){
+  const cards = allItems().map(item=>{
+    const owned = state.owned.includes(item.id);
+    const placed = state.placed.includes(item.id);
+    let btn;
+    if(!owned) btn = '<button class="chip" data-buy="'+item.id+'"'+(state.coins<item.price?" disabled":"")+'>Купити</button>';
+    else if(placed) btn = '<button class="chip out" data-toggle="'+item.id+'">Прибрати</button>';
+    else btn = '<button class="chip" data-toggle="'+item.id+'">На полицю</button>';
+    return '<div class="shop-item"><div class="art">'+itemArt(item)+'</div>'
+      + '<div class="nm">'+esc(item.name)+'</div>'
+      + '<div class="price">'+(owned ? "придбано" : item.price+" ◈")+'</div>'
+      + btn
+      + (item.img ? '<button class="del" data-remove="'+item.id+'">видалити</button>' : '')
+      + '</div>';
+  }).join("");
+
+  $("shopGrid").innerHTML = cards
+    + '<div class="add-item-card" id="addItemCard">'
+    + '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>'
+    + 'Свій предмет</div>';
+
+  $("shopGrid").querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>{
+    const item = allItems().find(i=>i.id===b.dataset.buy);
+    if(!item || state.coins < item.price) return;
+    state.coins -= item.price;
+    state.owned.push(item.id);
+    state.placed.push(item.id);
+    renderAll(); scheduleSave();
+  });
+  $("shopGrid").querySelectorAll("[data-toggle]").forEach(b=>b.onclick=()=>{
+    const id = b.dataset.toggle;
+    state.placed = state.placed.includes(id) ? state.placed.filter(x=>x!==id) : state.placed.concat(id);
+    renderAll(); scheduleSave();
+  });
+  $("shopGrid").querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{
+    const id = b.dataset.remove;
+    state.custom = state.custom.filter(i=>i.id!==id);
+    state.owned = state.owned.filter(x=>x!==id);
+    state.placed = state.placed.filter(x=>x!==id);
+    renderAll(); scheduleSave();
+  });
+  $("addItemCard").onclick = openItemForm;
+}
+
+function openItemForm(){
+  openSheet(
+    '<div class="sheet-head"><h3>Свій предмет</h3>'+XICON+'</div>'
+    + '<div class="preview contain hidden" id="itemPreview"></div>'
+    + '<label class="filebtn" for="iImg">'
+    + '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>'
+    + 'Вибрати картинку<span class="fname" id="iName"></span></label>'
+    + '<input type="file" accept="image/*" id="iImg" />'
+    + '<input id="iTitle" placeholder="Назва предмета" />'
+    + '<input id="iPrice" type="number" inputmode="numeric" min="0" placeholder="Ціна в монетах" />'
+    + '<button class="btn" id="iSave" style="margin-top:6px">Додати в крамницю</button>'
+    + '<p class="small-note" style="margin-top:10px">Найкраще підходять картинки без фону (PNG).</p>'
+  );
+  let img = null;
+  $("iImg").onchange = async e => {
+    const f = e.target.files[0]; if(!f) return;
+    $("iName").textContent = f.name;
+    document.querySelector('label[for="iImg"]').classList.add("filled");
+    img = await shrinkImage(f, 260, 260, .9, "image/png");
+    const p = $("itemPreview");
+    if(img){ p.style.backgroundImage = "url("+img+")"; p.classList.remove("hidden"); }
+  };
+  $("iSave").onclick = () => {
+    const name = $("iTitle").value.trim();
+    const price = parseInt($("iPrice").value, 10);
+    if(!name || !img || isNaN(price) || price < 0) return;
+    state.custom.push({id:uid("c"), name, price, img});
+    closeModal(); renderAll(); scheduleSave();
+  };
+}
+
+function renderThemes(){
+  $("themeGrid").innerHTML = Object.entries(THEMES).map(([k,t])=>
+    '<div class="swatch '+(state.theme===k?"on":"")+'" data-theme="'+k+'">'
+    + '<div class="dots">'
+    + '<div class="dot" style="background:'+t.vars["--bg"]+'"></div>'
+    + '<div class="dot" style="background:'+t.vars["--accent"]+'"></div>'
+    + '<div class="dot" style="background:'+t.vars["--plank2"]+'"></div>'
+    + '</div><span>'+t.name+'</span></div>').join("");
+  $("themeGrid").querySelectorAll("[data-theme]").forEach(el=>el.onclick=()=>{
+    state.theme = el.dataset.theme;
+    applyTheme(); renderThemes(); scheduleSave();
+  });
+}
+
+let currentPage = "shelf";
+function setPage(p, fromHistory){
+  const prev = currentPage;
+  currentPage = p;
+  $("viewShelf").classList.toggle("hidden", p!=="shelf");
+  $("viewShop").classList.toggle("hidden", p!=="shop");
+  $("viewSettings").classList.toggle("hidden", p!=="settings");
+  $("navShelf").classList.toggle("on", p==="shelf");
+  $("navShop").classList.toggle("on", p==="shop");
+  $("navSettings").classList.toggle("on", p==="settings");
+  window.scrollTo(0,0);
+  if(fromHistory || p === prev) return;
+  if(p !== "shelf") history.pushState({app:p}, "");
+  else if(history.state && history.state.app && history.state.app !== "shelf") history.back();
+}
+$("navShelf").onclick = ()=>setPage("shelf");
+$("navShop").onclick = ()=>setPage("shop");
+$("navSettings").onclick = ()=>setPage("settings");
+$("navAdd").onclick = ()=>openBookForm();
+$("quickAdd").onclick = ()=>openBookForm();
+
+function closeModal(){
+  if(!$("modalRoot").innerHTML) return;
+  if(history.state && history.state.app === "sheet"){ history.back(); return; }
+  $("modalRoot").innerHTML = "";
+}
+function openSheet(html){
+  $("modalRoot").innerHTML = '<div class="backdrop" id="bd"><div class="sheet">'+html+'</div></div>';
+  $("bd").onclick = e => { if(e.target.id==="bd") closeModal(); };
+  const x = document.querySelector("#modalRoot .x");
+  if(x) x.onclick = closeModal;
+  history.pushState({app:"sheet"}, "");
+}
+const XICON = '<svg class="x" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+
+function openBookForm(existing){
+  const b = existing || {title:"",author:"",tag:"",note:"",status:"planned",cover:null};
+  openSheet(
+    '<div class="sheet-head"><h3>'+(existing?"Редагувати книгу":"Нова книга")+'</h3>'+XICON+'</div>'
+    + '<div class="seg" id="segStatus">'
+    + Object.entries(STATUSES).map(([k,v])=>'<button data-s="'+k+'" class="'+(b.status===k?"on":"")+'">'+v+'</button>').join("")
+    + '</div>'
+    + '<input id="fTitle" placeholder="Назва книги" value="'+esc(b.title)+'" />'
+    + '<input id="fAuthor" placeholder="Автор" value="'+esc(b.author||"")+'" />'
+    + '<input id="fTag" placeholder="Жанр або тег" value="'+esc(b.tag||"")+'" />'
+    + '<textarea id="fNote" rows="3" placeholder="Короткі враження чи нотатка">'+esc(b.note||"")+'</textarea>'
+    + '<div class="label">ОБКЛАДИНКА (необов\'язково)</div>'
+    + '<div class="preview hidden" id="fCoverPreview" style="height:130px"></div>'
+    + '<label class="filebtn'+(b.cover?" filled":"")+'" for="fCover">'
+    + '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>'
+    + 'Вибрати фото обкладинки<span class="fname" id="fCoverName"></span></label>'
+    + '<input type="file" accept="image/*" id="fCover" />'
+    + '<button class="btn" id="fSave" style="margin-top:6px">'+(existing?"Зберегти":"Додати на полицю")+'</button>'
+  );
+  let status = b.status, cover = b.cover;
+  document.querySelectorAll("#segStatus button").forEach(btn=>btn.onclick=()=>{
+    status = btn.dataset.s;
+    document.querySelectorAll("#segStatus button").forEach(x=>x.classList.toggle("on", x===btn));
+  });
+  if(cover){
+    const p0 = $("fCoverPreview");
+    p0.style.backgroundImage = "url("+cover+")";
+    p0.classList.remove("hidden");
+  }
+  $("fCover").onchange = async e => {
+    const f = e.target.files[0]; if(!f) return;
+    $("fCoverName").textContent = f.name;
+    document.querySelector('label[for="fCover"]').classList.add("filled");
+    cover = await shrinkImage(f, 300, 440, .8);
+    const p = $("fCoverPreview");
+    if(cover){ p.style.backgroundImage = "url("+cover+")"; p.classList.remove("hidden"); }
+  };
+  $("fSave").onclick = () => {
+    const title = $("fTitle").value.trim(); if(!title) return;
+    const data = {
+      title,
+      author: $("fAuthor").value.trim(),
+      tag: $("fTag").value.trim(),
+      note: $("fNote").value.trim(),
+      status, cover,
+    };
+    let earned = false;
+    if(existing){
+      const idx = state.books.findIndex(x=>x.id===existing.id);
+      const wasRead = state.books[idx].status === "read";
+      state.books[idx] = Object.assign(state.books[idx], data);
+      if(!wasRead && status==="read"){ state.books[idx].dateRead = todayStr(); earned = true; }
+    } else {
+      const book = Object.assign({id:uid("b")}, data);
+      if(status==="read"){ book.dateRead = todayStr(); earned = true; }
+      state.books.push(book);
+    }
+    closeModal();
+    if(earned) rewardCoins();
+    renderAll(); scheduleSave();
+  };
+}
+
+function rewardCoins(){
+  state.coins += COINS_PER_BOOK;
+  setTimeout(()=>{
+    openSheet(
+      '<div class="sheet-head"><h3>Книга на поличці</h3>'+XICON+'</div>'
+      + '<div class="reward">+'+COINS_PER_BOOK+' ◈ монет за прочитану книгу</div>'
+      + '<button class="btn ghost" id="toShop">Зайти в крамницю</button>'
+    );
+    const t = $("toShop");
+    if(t) t.onclick = ()=>{ closeModal(); setPage("shop"); };
+  }, 150);
+}
+
+function openDetail(id){
+  const b = state.books.find(x=>x.id===id); if(!b) return;
+  const c = coverColor(b);
+  openSheet(
+    '<div class="sheet-head"><h3>'+STATUSES[b.status]+'</h3>'+XICON+'</div>'
+    + '<div style="display:flex;gap:16px;align-items:flex-start">'
+    + '<div class="detail-cover'+(b.cover?" has-cover":"")+'" style="background:linear-gradient(100deg,'+c+' 0%,'+c+' 78%,rgba(0,0,0,.28) 100%)">'
+    + (b.cover?'<img src="'+b.cover+'" alt="">':'')
+    + '<div class="bk-title" style="font-size:13px">'+esc(b.title)+'</div>'
+    + '<div class="bk-author" style="font-size:10px">'+esc(b.author||"")+'</div>'
+    + '</div>'
+    + '<div style="flex:1;min-width:0">'
+    + '<div class="serif" style="font-size:19px;font-weight:700;line-height:1.2">'+esc(b.title)+'</div>'
+    + (b.author?'<div style="font-size:14px;color:var(--muted);font-weight:700;margin-top:2px">'+esc(b.author)+'</div>':'')
+    + '<div class="meta">'+(b.tag?esc(b.tag)+" · ":"")
+      + (b.status==="read"&&b.dateRead ? "прочитано "+esc(b.dateRead) : STATUSES[b.status])+'</div>'
+    + '</div></div>'
+    + (b.note?'<div class="note-box">'+esc(b.note)+'</div>':'<div style="height:16px"></div>')
+    + (b.status!=="read"?'<button class="btn" id="dRead">Позначити прочитаною · +'+COINS_PER_BOOK+' ◈</button>':'')
+    + (b.status==="planned"?'<button class="btn ghost" style="margin-top:8px" id="dReading">Почала читати</button>':'')
+    + '<div style="display:flex;gap:8px;margin-top:14px">'
+    + '<button class="btn ghost small" style="flex:1" id="dEdit">Редагувати</button>'
+    + '<button class="btn danger" style="flex:1" id="dDel">Видалити</button>'
+    + '</div>'
+  );
+  const rd = $("dRead");
+  if(rd) rd.onclick = ()=>{
+    b.status = "read"; b.dateRead = todayStr();
+    closeModal(); rewardCoins(); renderAll(); scheduleSave();
+  };
+  const rg = $("dReading");
+  if(rg) rg.onclick = ()=>{ b.status = "reading"; closeModal(); renderAll(); scheduleSave(); };
+  $("dEdit").onclick = ()=>{ closeModal(); setTimeout(()=>openBookForm(b), 90); };
+  $("dDel").onclick = ()=>{
+    state.books = state.books.filter(x=>x.id!==id);
+    closeModal(); renderAll(); scheduleSave();
+  };
+}
+
+function shrinkImage(file, maxW, maxH, quality, mime){
+  return new Promise(resolve=>{
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        const scale = Math.min(maxW/w, maxH/h, 1);
+        w = Math.round(w*scale); h = Math.round(h*scale);
+        const cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL(mime || "image/jpeg", quality));
+      };
+      img.onerror = () => resolve(null);
+      img.src = reader.result;
+    };
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
+
+function syncUploadUI(){
+  const bgP = $("bgPreview"), plP = $("plankPreview");
+  if(state.bgImg){ bgP.style.backgroundImage = "url("+state.bgImg+")"; bgP.classList.remove("hidden"); }
+  else { bgP.classList.add("hidden"); $("bgName").textContent = ""; }
+  if(state.plankImg){ plP.style.backgroundImage = "url("+state.plankImg+")"; plP.classList.remove("hidden"); }
+  else { plP.classList.add("hidden"); $("plankName").textContent = ""; }
+  document.querySelector('label[for="bgUpload"]').classList.toggle("filled", !!state.bgImg);
+  document.querySelector('label[for="plankUpload"]').classList.toggle("filled", !!state.plankImg);
+}
+
+$("bgUpload").onchange = async e => {
+  const f = e.target.files[0]; if(!f) return;
+  $("bgName").textContent = f.name;
+  state.bgImg = await shrinkImage(f, 900, 1600, .72);
+  applyTheme(); syncUploadUI(); scheduleSave();
+};
+$("bgClear").onclick = ()=>{ state.bgImg = null; $("bgUpload").value = ""; applyTheme(); syncUploadUI(); scheduleSave(); };
+$("plankUpload").onchange = async e => {
+  const f = e.target.files[0]; if(!f) return;
+  $("plankName").textContent = f.name;
+  state.plankImg = await shrinkImage(f, 800, 240, .82);
+  applyTheme(); syncUploadUI(); scheduleSave();
+};
+$("plankClear").onclick = ()=>{ state.plankImg = null; $("plankUpload").value = ""; applyTheme(); syncUploadUI(); scheduleSave(); };
+
+$("exportBtn").onclick = ()=>{
+  const stamp = new Date().toISOString().slice(0,10);
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "biblioteka-" + stamp + ".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+$("importFile").onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try{ data = JSON.parse(reader.result); }
+    catch(err){ toast("Не вдалося прочитати файл копії."); return; }
+    if(!data || !Array.isArray(data.books)){ toast("Це не схоже на копію бібліотеки."); return; }
+    openSheet(
+      '<div class="sheet-head"><h3>Відновити з копії?</h3>'+XICON+'</div>'
+      + '<p class="small-note">У копії: '+data.books.length+' кн., '+(data.coins||0)+' монет. '
+      + 'Поточна бібліотека буде замінена.</p>'
+      + '<button class="btn" id="impYes" style="margin-top:14px">Відновити</button>'
+      + '<button class="btn ghost" id="impNo" style="margin-top:8px">Скасувати</button>'
+    );
+    $("impYes").onclick = ()=>{
+      state = Object.assign({books:[],coins:0,owned:[],placed:[],custom:[],theme:"lumo",bgImg:null,plankImg:null}, data);
+      if(!Array.isArray(state.custom)) state.custom = [];
+      closeModal(); applyTheme(); renderAll(); syncUploadUI(); scheduleSave();
+      setPage("shelf");
+    };
+    $("impNo").onclick = closeModal;
+  };
+  reader.readAsText(f);
+  e.target.value = "";
+};
+
+function toast(msg){
+  const t = document.createElement("div");
+  t.textContent = msg;
+  t.style.cssText = "position:fixed;left:50%;bottom:104px;transform:translateX(-50%);"
+    + "background:var(--ink);color:var(--card);padding:12px 18px;border-radius:14px;"
+    + "font-family:'Nunito',system-ui,sans-serif;font-weight:700;font-size:13px;z-index:80;max-width:82vw;text-align:center";
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2600);
+}
+
+/* апаратна кнопка «назад»: спершу закриває віконце, потім вертає на полицю */
+history.replaceState({app:"shelf"}, "");
+window.addEventListener("popstate", ()=>{
+  if($("modalRoot").innerHTML){ $("modalRoot").innerHTML = ""; return; }
+  if(currentPage !== "shelf") setPage("shelf", true);
+});
+
+let rt;
+window.addEventListener("resize", ()=>{ clearTimeout(rt); rt = setTimeout(renderShelves, 150); });
+
+load();
+
+/* офлайн-режим */
+function setSwState(text){ const el = $("swState"); if(el) el.textContent = text; }
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js")
+      .then(() => setSwState("готово ✓"))
+      .catch(() => setSwState("недоступний"));
+  });
+} else {
+  setSwState("недоступний");
+}
+</script>
+</body>
+</html>
