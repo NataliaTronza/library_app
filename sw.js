@@ -1,7 +1,7 @@
 /* Службовий скрипт: дає застосунку працювати без інтернету.
    Змінюй CACHE_VERSION, коли оновлюєш файли — тоді телефон підхопить нову версію. */
 
-const CACHE_VERSION = "biblioteka-v4";
+const CACHE_VERSION = "biblioteka-v5";
 const COVER_CACHE = "biblioteka-covers-v1";
 const COVER_HOSTS = ["covers.openlibrary.org", "books.google.com", "books.googleusercontent.com", "upload.wikimedia.org"];
 const CORE = [

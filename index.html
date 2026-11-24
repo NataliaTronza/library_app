@@ -269,8 +269,8 @@ body.night .stamp{mix-blend-mode:normal}
 .stamp.big{font-size:22px;padding:8px 16px 6px}
 .stamp.thump{animation:thump .45s cubic-bezier(.2,1.5,.4,1) both}
 @keyframes thump{0%{transform:scale(2.6) rotate(-16deg);opacity:0}55%{transform:scale(.92) rotate(-8deg);opacity:1}100%{transform:scale(1) rotate(-8deg);opacity:.88}}
-.shake{animation:cardshake .3s ease .3s}
-@keyframes cardshake{0%,100%{transform:translateY(-50%)}30%{transform:translateY(calc(-50% + 3px))}60%{transform:translateY(calc(-50% - 2px))}}
+.shake{animation:up .3s cubic-bezier(.2,.8,.2,1),cardshake .3s ease .55s}
+@keyframes cardshake{0%,100%{transform:none}30%{transform:translateY(3px)}60%{transform:translateY(-2px)}}
 
 /* каталожна картка книги */
 .cat-hd{display:flex;justify-content:space-between;padding-bottom:7px;margin-bottom:12px;border-bottom:1.5px solid color-mix(in srgb,var(--stamp) 55%,transparent)}
@@ -285,7 +285,8 @@ body.night .stamp{mix-blend-mode:normal}
 .fld span{color:var(--ink2);flex:none}
 .fld i{flex:1;border-bottom:1px dotted var(--rule2);transform:translateY(-5px)}
 .fld b{font-weight:400;text-align:right}
-.cat-stamp{position:absolute;left:46px;bottom:-16px;pointer-events:none}
+.cat-stamp{margin:12px 0 0 6px}
+.cat-stamp .stamp{font-size:12.5px;letter-spacing:.1em;padding:4px 9px 3px}
 .hand-note{margin:18px 0 6px;padding:2px 4px;font-family:var(--hand);font-size:18.5px;line-height:24px;min-height:48px;
   background-image:repeating-linear-gradient(transparent 0 23px,var(--ruled) 23px 24px)}
 .hole{display:block;width:16px;height:16px;border-radius:50%;margin:16px auto 0;background:var(--wall);box-shadow:inset 0 2px 3px rgba(0,0,0,.25)}
@@ -329,8 +330,8 @@ body.night .stamp{mix-blend-mode:normal}
 
 /* ═══ навігація ═══ */
 #nav{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:40;max-width:470px;margin:0 auto;
-  background:var(--nav);border-radius:20px;box-shadow:0 14px 30px -10px rgba(0,0,0,.5);display:grid;grid-template-columns:repeat(4,1fr);padding:6px;align-items:center}
-#nav button{color:rgba(255,248,235,.62);display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 5px;font-weight:700;font-size:11px;border-radius:14px}
+  background:var(--nav);border-radius:20px;box-shadow:0 14px 30px -10px rgba(0,0,0,.5);display:grid;grid-template-columns:repeat(5,1fr);padding:6px;align-items:center}
+#nav button{color:rgba(255,248,235,.62);display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 5px;font-weight:700;font-size:10.5px;border-radius:14px;min-width:0}
 #nav button svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #nav button.on{color:#fff8eb;background:rgba(255,255,255,.1)}
 #nav .coinbtn{width:46px;height:46px;border-radius:50%;background:var(--brass);color:#2a2214;display:grid;place-items:center;
@@ -346,6 +347,114 @@ body.night .stamp{mix-blend-mode:normal}
 .cf{position:absolute;top:-20px;width:8px;height:13px;border-radius:2px;animation:fall linear forwards}
 @keyframes fall{from{transform:translateY(-20px) rotate(0)}to{transform:translateY(105vh) rotate(720deg)}}
 .err{color:var(--stamp);font-size:13px;font-weight:700;padding:4px 2px 10px}
+
+
+/* ═══ зараз читаю ═══ */
+.now-row{display:flex;gap:12px;align-items:center}
+.now-row+.now-row{margin-top:12px;padding-top:12px;border-top:1px dashed var(--rule2)}
+.now-cover{width:60px;height:88px;border-radius:2px 6px 6px 2px;flex:none;overflow:hidden;position:relative;box-shadow:2px 4px 10px var(--bshadow);cursor:pointer;
+  display:flex;align-items:flex-end;padding:6px 5px 6px 8px}
+.now-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.now-cover span{position:relative;font-family:var(--serif);font-weight:700;font-size:9px;line-height:1.15;color:#fff6e4;text-shadow:0 1px 2px rgba(0,0,0,.5);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.tb-c span{display:none}
+.now-txt{flex:1;min-width:0}
+.now-t{font-family:var(--serif);font-weight:700;font-size:17px;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.now-a{font-size:13px;color:var(--ink2);font-weight:600;margin-top:1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.now-d{margin-top:4px}
+.now-btns{display:flex;gap:6px;margin-top:8px}
+.now-empty{display:flex;align-items:center;justify-content:space-between;gap:12px}
+
+/* ═══ оцінка ═══ */
+.stars{display:flex;gap:3px;justify-content:center}
+.star{width:29px;height:29px;padding:0;display:grid;place-items:center}
+.star svg{width:27px;height:27px;transition:transform .15s}
+.star svg path{fill:var(--card2);stroke:var(--rule2);stroke-width:1.4}
+.star.on svg path{fill:var(--brass);stroke:var(--brass)}
+.star:active svg{transform:scale(.85)}
+.stars.sm{justify-content:flex-start;gap:1px;pointer-events:none}
+.stars.sm .star{width:14px;height:14px}.stars.sm .star svg{width:13px;height:13px}
+.rate-word{text-align:center;margin-top:8px;min-height:22px}
+.rate-word b{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink)}
+.rate-word span{margin-left:6px}
+.expander{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;height:40px;margin-top:14px;border-radius:10px;
+  background:var(--card2);border:1.5px solid var(--rule);font-weight:700;font-size:13.5px;color:var(--accent-ink)}
+.expander svg{transition:transform .2s}
+.expander.open svg{transform:rotate(180deg)}
+.trait-grp{margin-top:14px}
+.trait{margin-top:10px}
+.trait-hd{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;font-size:14px;margin-bottom:5px}
+.segs{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;height:24px}
+.segs button{background:var(--card2);border:1px solid var(--rule)}
+.segs button:first-child{border-radius:8px 0 0 8px}.segs button:last-child{border-radius:0 8px 8px 0}
+.segs button.on{background:var(--accent);border-color:var(--accent)}
+.segs.mood button.on{background:var(--stamp);border-color:var(--stamp)}
+.rating-box{margin:14px 0 4px;padding:12px;border:1px dashed var(--rule2);border-radius:10px}
+.rating-box .row-sp{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mini-traits{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:10px}
+.mt{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);font-weight:600}
+.mt span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt i{display:flex;gap:1.5px}
+.mt i b{width:7px;height:7px;border-radius:2px;background:var(--rule)}
+.mt i b.on{background:var(--accent)}
+.mt.mood i b.on{background:var(--stamp)}
+
+/* ═══ жанри у формі ═══ */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{height:32px;padding:0 11px;border-radius:9px;background:var(--card2);border:1.5px solid var(--rule);font-size:12.5px;font-weight:700;color:var(--ink2)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fffaf1}
+.chip.add{border-style:dashed;color:var(--accent-ink)}
+.dates{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+input[type=date].inp{font-family:var(--mono);font-size:14px;padding:0 10px}
+
+/* ═══ статистика ═══ */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.tile{background:var(--card);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);padding:12px 14px}
+.tile .v{font-weight:800;font-size:26px;line-height:1.1;margin-top:4px;color:var(--ink)}
+.tile .v small{font-size:14px;font-weight:700;color:var(--ink2);margin-left:3px}
+.tile .h{font-size:12px;color:var(--ink2);margin-top:2px;line-height:1.35}
+.goal-num{display:flex;align-items:baseline;gap:6px}
+.goal-num b{font-weight:800;font-size:40px;line-height:1}
+.goal-num span{font-weight:700;color:var(--ink2);font-size:16px}
+.goal-bar{position:relative;height:12px;border-radius:99px;background:var(--card2);border:1px solid var(--rule);margin:14px 0 6px}
+.goal-bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--accent);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.goal-bar .today{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--ink);border-radius:2px}
+.goal-bar .today::after{content:attr(data-l);position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9.5px;color:var(--ink2);white-space:nowrap}
+.goal-msg{font-size:13.5px;line-height:1.45;margin-top:10px}
+.chart{display:block;width:100%;height:auto;overflow:visible}
+.chart .ax{font-family:var(--mono);font-size:10px;fill:var(--ink2)}
+.chart .val{font-family:var(--sans);font-weight:800;font-size:11px;fill:var(--ink)}
+.chart .grid{stroke:var(--rule);stroke-width:1}
+.chart .hit{fill:transparent;cursor:pointer}
+.chart .col{transition:opacity .2s}
+.chart.dim .col{opacity:.35}.chart.dim .col.sel{opacity:1}
+.chart-note{font-size:13px;color:var(--ink2);margin-top:8px;min-height:19px;line-height:1.45}
+.donut-wrap{display:flex;gap:14px;align-items:center}
+.donut{flex:none;width:148px;height:148px}
+.donut .seg{transition:opacity .2s;cursor:pointer}
+.donut.dim .seg{opacity:.3}.donut.dim .seg.sel{opacity:1}
+.donut .c1{font-family:var(--sans);font-weight:800;font-size:26px;fill:var(--ink)}
+.donut .c2{font-family:var(--mono);font-size:9.5px;fill:var(--ink2);letter-spacing:.06em}
+.legend{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.lg{display:flex;align-items:center;gap:8px;font-size:13px;padding:4px 6px;border-radius:8px;cursor:pointer}
+.lg.sel{background:var(--card2)}
+.lg i{width:10px;height:10px;border-radius:3px;flex:none}
+.lg span{flex:1;min-width:0;font-weight:600;line-height:1.2}
+.lg b{font-family:var(--mono);font-weight:400;font-size:11px;color:var(--ink2);white-space:nowrap}
+.meter{display:grid;grid-template-columns:96px 1fr 34px;align-items:center;gap:10px;margin-top:9px;font-size:13px;font-weight:600}
+.meter .tr{height:8px;border-radius:99px;background:var(--card2);border:1px solid var(--rule);overflow:hidden}
+.meter .tr i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.meter.mood .tr i{background:var(--stamp)}
+.meter b{font-family:var(--mono);font-weight:400;font-size:12px;color:var(--ink2);text-align:right}
+.toplist .tb{display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer}
+.toplist .tb+.tb{border-top:1px dashed var(--rule)}
+.tb-c{width:36px;height:52px;border-radius:2px 4px 4px 2px;flex:none;overflow:hidden;position:relative;box-shadow:1px 2px 5px var(--bshadow)}
+.tb-c img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tb-t{flex:1;min-width:0}
+.tb-t div:first-child{font-family:var(--serif);font-weight:700;font-size:14.5px;line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tb-r{font-weight:800;font-size:15px;color:var(--brass);white-space:nowrap}
+.facts .fld{font-size:12.5px;line-height:1.9}
+.stat-empty{text-align:center;padding:10px 6px}
+.stat-empty p{font-family:var(--hand);font-size:18px;margin:8px 0 0}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -385,11 +494,23 @@ body.night .stamp{mix-blend-mode:normal}
       </div>
     </section>
 
+    <section class="card" id="nowCard"></section>
+
     <div id="err" class="err hidden"></div>
     <div class="sec"><h2>Полиця</h2><span class="mono" id="shelfCount"></span></div>
     <div class="tabs" id="tabs"></div>
     <div id="shelves"></div>
     <button class="btn ghost wide" id="quickAdd" style="margin-top:4px">+ Додати книгу</button>
+  </section>
+
+  <!-- СТАТИСТИКА -->
+  <section id="viewStats" class="hidden">
+    <header class="hdr">
+      <div><div class="kicker">річний звіт</div><h1 class="title">Статистика</h1></div>
+      <div class="round-stamp"><span id="stY">2026</span><b id="stN">0</b><span id="stSub">КНИГ</span></div>
+    </header>
+    <div class="tabs" id="yearTabs"></div>
+    <div id="statsBody"></div>
   </section>
 
   <!-- КРАМНИЦЯ -->
@@ -487,6 +608,7 @@ body.night .stamp{mix-blend-mode:normal}
 
 <nav id="nav">
   <button id="navShelf" class="on"><svg viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2.5Z"/><path d="M6 17h13"/></svg>Полиця</button>
+  <button id="navStats"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-9Z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15Z"/></svg>Статистика</button>
   <button id="navAdd" aria-label="Додати книгу"><span class="coinbtn"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></span></button>
   <button id="navShop"><svg viewBox="0 0 24 24"><path d="M3 7h18l-1.5 12.5a2 2 0 0 1-2 1.5H6.5a2 2 0 0 1-2-1.5Z"/><path d="M8.5 7a3.5 3.5 0 0 1 7 0"/></svg>Крамниця</button>
   <button id="navSettings"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16.2c.6-1.6 1.8-2.4 3.2-2.4s2.6.8 3.2 2.4M14.5 10h4M14.5 13.5h3"/></svg>Я</button>
@@ -640,11 +762,36 @@ const PER_LEVEL = 5;
 const LEVELS = ["Перша сторінка","Книголюбка","Читачка зі стажем","Знавчиня","Колекціонерка історій","Хранителька бібліотеки","Легенда полиці"];
 const COVER_COLORS = ["#7A2E2E","#3F5B45","#B08A2E","#2E4A6B","#5B3358","#2E6B63","#8C4A2F","#4A5D7E","#6B5B95","#A8623C"];
 const STATUSES = {planned:"Хочу прочитати", reading:"Читаю", read:"Прочитано"};
+
+/* жанри: один на книгу — так діаграма лишається чесною */
+const GENRES = ["Сучасна проза","Класика","Детектив","Трилер","Фентезі","Фантастика","Жахи","Любовний роман",
+  "Історичний роман","Нон-фікшн","Психологія","Саморозвиток","Біографія","Поезія","Young adult","Дитяча","Комікс"];
+/* жанри з Вікіданих → наші назви */
+const WD_GENRE = {Q186424:"Детектив",Q208505:"Детектив",Q1200678:"Детектив",Q182015:"Трилер",Q19765983:"Трилер",Q2421031:"Трилер",
+  Q132311:"Фентезі",Q1209283:"Фентезі",Q24925:"Фантастика",Q15062348:"Фантастика",Q193606:"Жахи",Q858330:"Любовний роман",
+  Q1196408:"Історичний роман",Q213051:"Нон-фікшн",Q20540385:"Нон-фікшн",Q36279:"Біографія",Q112983:"Біографія",Q482:"Поезія",
+  Q12106333:"Поезія",Q1233720:"Young adult",Q131539:"Дитяча",Q699:"Дитяча",Q1004:"Комікс",Q8274:"Комікс",Q9418:"Психологія"};
+/* детальна оцінка: 0 — не оцінено, 1–5 */
+const TRAITS = [
+  {k:"plot",  e:"📖", n:"Сюжет",     g:"q"}, {k:"chars", e:"👥", n:"Персонажі", g:"q"},
+  {k:"style", e:"✍️", n:"Стиль",     g:"q"}, {k:"ending",e:"🏁", n:"Фінал",     g:"q"},
+  {k:"wow",   e:"🤯", n:"Вау-ефект", g:"q"},
+  {k:"funny", e:"😂", n:"Смішна",    g:"m"}, {k:"emo",   e:"💔", n:"Емоційна",  g:"m"},
+  {k:"cozy",  e:"☕", n:"Затишна",   g:"m"}, {k:"tense", e:"😰", n:"Напружена", g:"m"},
+  {k:"spicy", e:"🔥", n:"Пікантна",  g:"m"},
+];
+const RATE_WORDS = ["","не моє","не моє","слабко","так собі","непогано","непогано","добре","дуже добре","чудово","шедевр"];
+const MONTHS_SHORT = ["січ","лют","бер","кві","тра","чер","лип","сер","вер","жов","лис","гру"];
+const MONTHS_FULL = ["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"];
+const MONTHS_GEN = ["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];
+/* палітра жанрів перевірена на розрізнення (і для порушень кольорозору); 5 жанрів + «інше» */
+const GENRE_COLORS = {light:["#1d7f5f","#3a64a8","#c4533a","#8a4a87","#b8861f"], dark:["#23896a","#4f77bf","#cf5c40","#9d5c99","#b8861f"],
+                      otherLight:"#d9d0bf", otherDark:"#46514b"};
 const STORAGE_KEY = "library-data-v2";
 
 let state = {books:[], coins:0, owned:[], placed:[], custom:[], theme:"lamp",
-             bgImg:null, plankImg:null, mascotName:DEFAULT_NAME, mascotOn:true, nightTheme:true, gbKey:""};
-let filter = "all", saveTimer = null, lineIndex = 0, currentPage = "shelf";
+             bgImg:null, plankImg:null, mascotName:DEFAULT_NAME, mascotOn:false, nightTheme:true, gbKey:"", goals:{}, v5:true};
+let filter = "all", saveTimer = null, lineIndex = 0, currentPage = "shelf", statsYear = new Date().getFullYear();
 
 const $ = id => document.getElementById(id);
 const esc = s => {const d=document.createElement("div"); d.textContent = s==null?"":s; return d.innerHTML;};
@@ -691,9 +838,29 @@ function normalizeState(){
   if(typeof state.gbKey !== "string") state.gbKey = "";
   const OLD = {stezhka:"lamp", lumo:"lavender", night:"lamp", rose:"bordo", sky:"ink"};
   if(!THEMES[state.theme]) state.theme = OLD[state.theme] || "lamp";
+  if(!state.goals || typeof state.goals !== "object") state.goals = {};
+  state.books.forEach(b => {
+    if(b.status === "read" && !b.readAt){ const iso = parseUkDate(b.dateRead); if(iso) b.readAt = iso; }
+    if(b.traits && typeof b.traits !== "object") b.traits = {};
+  });
 }
+/* «12 березня 2026» → ISO */
+function parseUkDate(str){
+  const m = (str || "").match(/(\d{1,2})\s+([а-яіїєґ]+)\s+(\d{4})/i);
+  if(!m) return null;
+  const mi = MONTHS_GEN.indexOf(m[2].toLowerCase());
+  if(mi < 0) return null;
+  return new Date(+m[3], mi, +m[1], 12).toISOString();
+}
+const readYear = b => b.readAt ? new Date(b.readAt).getFullYear() : null;
+const ymd = iso => { const d = new Date(iso); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
+const fromYmd = v => { if(!v) return null; const [y,m,d] = v.split("-").map(Number); return new Date(y, m-1, d, 12).toISOString(); };
+const dayDiff = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+const longDate = iso => { const d = new Date(iso); return d.getDate() + " " + MONTHS_GEN[d.getMonth()]; };
+/* v5: сова переїхала з полиці в шапку; на полиці — лише за бажанням */
+function upgrade(p){ if(p && !p.v5){ p.mascotOn = false; p.v5 = true; } return p; }
 async function load(){
-  try{ const raw = await readStorage(); if(raw) state = Object.assign(state, JSON.parse(raw)); }catch(e){}
+  try{ const raw = await readStorage(); if(raw) state = Object.assign(state, upgrade(JSON.parse(raw))); }catch(e){}
   normalizeState();
   applyTheme(); applyNight(); renderAll(); syncUploadUI();
   heroFxTick();
@@ -719,7 +886,7 @@ function applyNight(){
   const n = isNight();
   document.body.classList.toggle("night", n);
   updateMetaColor();
-  if(lastNight !== null && lastNight !== n) renderHero(true);
+  if(lastNight !== null && lastNight !== n){ renderHero(true); renderStats(); }
   lastNight = n;
 }
 function updateMetaColor(){
@@ -729,7 +896,7 @@ function updateMetaColor(){
 setInterval(applyNight, 60000);
 
 /* ═══ МАЛЮВАННЯ ═══ */
-function renderAll(){ renderHero(); renderTabs(); renderShelves(); renderShop(); renderThemes(); renderMascotSettings(); }
+function renderAll(){ renderHero(); renderNow(); renderTabs(); renderShelves(); renderShop(); renderThemes(); renderMascotSettings(); renderStats(); }
 
 function readThisYear(){
   const y = new Date().getFullYear();
@@ -751,6 +918,11 @@ function mascotLines(){
   if(nowReading.length) out.push({mood:"read", line:"Читаю разом з тобою «" + short(nowReading[0].title) + "». Розкажеш, чим скінчиться?"});
   if(read === 0 && planned) out.push({mood:"idle", line:"У планах уже " + planned + " " + plural(planned,"книжка","книжки","книжок") + ". З якої почнемо?"});
   if(read) out.push({mood:"idle", line:"Прочитано вже " + read + " " + plural(read,"книжка","книжки","книжок") + ". Я тихо пишаюся."});
+  const gY = new Date().getFullYear(), goal = state.goals[gY], left = goal ? goal - readThisYear() : 0;
+  if(goal && left > 0) out.push({mood: nowReading.length ? "read" : "idle", line:"До мети на " + gY + " лишилось " + left + " " + plural(left,"книжка","книжки","книжок") + ". Ми встигнемо!"});
+  if(goal && left <= 0) out.push({mood:"idle", line:"Мету на " + gY + " виконано! Може, піднімемо планку?"});
+  const lastRated = state.books.filter(b=>b.status==="read" && b.rating).sort((a,b)=>(b.readAt||"").localeCompare(a.readAt||""))[0];
+  if(lastRated) out.push({mood:"idle", line:"«" + short(lastRated.title) + "» — " + lastRated.rating + " з 10. " + (lastRated.rating >= 9 ? "Записала в золотий фонд." : lastRated.rating <= 4 ? "Не все ж бути шедеврами." : "Чесна оцінка.")});
   out.push({mood: nowReading.length ? "read" : "idle", line:SEASON_LINES[season()]});
   if(planned && read) out.push({mood:"idle", line:"У планах " + planned + ". Що візьмемо наступною?"});
   out.push({mood:"idle", line:"Ще одна книжка — і полиця стане гарнішою."});
@@ -766,9 +938,10 @@ function renderHero(force){
   $("sCoins").textContent = state.coins;
   $("sCoins2").textContent = state.coins;
   const yr = readThisYear();
-  $("yrY").textContent = new Date().getFullYear();
+  const curY = new Date().getFullYear(), goal = state.goals[curY];
+  $("yrY").textContent = curY;
   $("sYear").textContent = yr;
-  $("sYearSub").textContent = plural(yr,"КНИГА","КНИГИ","КНИГ");
+  $("sYearSub").textContent = goal ? "ІЗ " + goal : plural(yr,"КНИГА","КНИГИ","КНИГ");
   $("seasonName").textContent = SEASONS[season()].name + (isNight() ? " · вечір" : "");
 
   const lvl = Math.min(LEVELS.length - 1, Math.floor(read / PER_LEVEL));
@@ -985,11 +1158,303 @@ $("nightToggle").onclick = ()=>{ state.nightTheme = state.nightTheme === false; 
 $("gbKey").oninput = e => { state.gbKey = e.target.value.trim(); scheduleSave(); };
 $("gbKey").onblur = () => renderMascotSettings();
 
+/* ═══ ЗАРАЗ ЧИТАЮ ═══ */
+function miniCover(b, cls){
+  const cov = bookCover(b), c = coverColor(b);
+  return '<div class="'+cls+'" style="background:linear-gradient(100deg,'+c+' 0%,'+c+' 78%,rgba(0,0,0,.28) 100%)">'
+    + (cov ? '<img src="'+cov+'" alt="" onerror="this.remove()">' : '<span>'+esc(b.title)+'</span>') + '</div>';
+}
+function renderNow(){
+  const box = $("nowCard");
+  const list = state.books.filter(b => b.status === "reading");
+  const planned = countBy("planned");
+  if(!list.length){
+    if(!planned){ box.classList.add("hidden"); return; }
+    box.classList.remove("hidden");
+    box.innerHTML = '<div class="now-empty"><div><div class="mono">Зараз читаю</div><div class="small" style="margin-top:3px">Нічого. У планах ' + planned + ' ' + plural(planned,"книга","книги","книг") + ' — вибереш наступну?</div></div>'
+      + '<button class="btn soft sm" id="pickNext">Вибрати</button></div>';
+    $("pickNext").onclick = () => { filter = "planned"; renderTabs(); renderShelves(); document.querySelector(".sec").scrollIntoView({behavior:"smooth"}); };
+    return;
+  }
+  box.classList.remove("hidden");
+  box.innerHTML = '<div class="card-hd"><span class="mono">Зараз читаю</span><span class="mono">'+list.length+' '+plural(list.length,"книга","книги","книг")+'</span></div>'
+    + list.map(b => {
+        const days = b.startedAt ? Math.max(1, dayDiff(b.startedAt, new Date().toISOString()) + 1) : 0;
+        return '<div class="now-row">' + miniCover(b, "now-cover").replace('class="now-cover"', 'class="now-cover" data-open="'+b.id+'"')
+          + '<div class="now-txt"><div class="now-t">'+esc(b.title)+'</div>'
+          + (b.author ? '<div class="now-a">'+esc(b.author)+'</div>' : '')
+          + '<div class="now-d mono">'+(b.startedAt ? "з " + longDate(b.startedAt) + " · " + days + "-й день" : "читаю")+'</div>'
+          + '<div class="now-btns"><button class="btn sm" data-done="'+b.id+'">Прочитала ✓</button><button class="btn ghost sm" data-open="'+b.id+'">Картка</button></div>'
+          + '</div></div>';
+      }).join("");
+  box.querySelectorAll("[data-open]").forEach(el => el.onclick = () => openDetail(el.dataset.open));
+  box.querySelectorAll("[data-done]").forEach(el => el.onclick = () => {
+    const b = state.books.find(x => x.id === el.dataset.done); if(!b) return;
+    markRead(b); celebrate(b); renderAll(); scheduleSave();
+  });
+}
+
+/* ═══ СТАТИСТИКА ═══ */
+let statsSel = {month:null, genre:null};
+const isDark = () => document.body.classList.contains("night");
+const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0) / arr.length : 0;
+const fmt1 = n => (Math.round(n*10)/10).toString().replace(".", ",");
+
+function genreColorMap(){
+  /* колір закріплений за жанром за всі роки — перемикання року не перефарбовує жанри */
+  const cnt = {};
+  state.books.filter(b=>b.status==="read" && b.tag).forEach(b => cnt[b.tag] = (cnt[b.tag]||0) + 1);
+  const ranked = Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a] || a.localeCompare(b));
+  const pal = isDark() ? GENRE_COLORS.dark : GENRE_COLORS.light;
+  const map = {};
+  ranked.slice(0,5).forEach((g,i)=>map[g] = pal[i]);
+  return map;
+}
+
+function monthsChart(counts, curMonth){
+  const W = 340, H = 156, L = 22, R = 4, T = 18, B = 22;
+  const max = Math.max(1, ...counts), top = max <= 4 ? max : Math.ceil(max/2)*2;
+  const slot = (W - L - R) / 12, bw = Math.min(18, slot - 8);
+  const y = v => T + (H - T - B) * (1 - v / top);
+  let g = '<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y(0)+'" y2="'+y(0)+'"/>'
+        + '<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y(top)+'" y2="'+y(top)+'"/>'
+        + '<text class="ax" x="'+(L-6)+'" y="'+(y(top)+3)+'" text-anchor="end">'+top+'</text>'
+        + '<text class="ax" x="'+(L-6)+'" y="'+(y(0)+3)+'" text-anchor="end">0</text>';
+  counts.forEach((v,i) => {
+    const cx = L + slot*i + slot/2, x = cx - bw/2;
+    if(v){
+      const yt = y(v), h = y(0) - yt, r = Math.min(4, h);
+      g += '<path class="col'+(statsSel.month===i?" sel":"")+'" fill="var(--accent)" d="M'+x+' '+y(0)+'V'+(yt+r)+'Q'+x+' '+yt+' '+(x+r)+' '+yt+'H'+(x+bw-r)+'Q'+(x+bw)+' '+yt+' '+(x+bw)+' '+(yt+r)+'V'+y(0)+'Z"/>';
+      g += '<text class="val" x="'+cx+'" y="'+(yt-5)+'" text-anchor="middle">'+v+'</text>';
+    }
+    g += '<text class="ax" x="'+cx+'" y="'+(H-6)+'" text-anchor="middle"'+(i===curMonth?' style="fill:var(--ink);font-weight:700"':'')+'>'+MONTHS_SHORT[i]+'</text>';
+    g += '<rect class="hit" data-m="'+i+'" x="'+(L+slot*i)+'" y="'+T+'" width="'+slot+'" height="'+(H-T)+'"/>';
+  });
+  return '<svg class="chart'+(statsSel.month!==null?" dim":"")+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Прочитано книг по місяцях">'+g+'</svg>';
+}
+
+function ratingsChart(dist){
+  const W = 340, H = 120, L = 6, R = 6, T = 16, B = 20;
+  const max = Math.max(1, ...dist), slot = (W-L-R)/10, bw = Math.min(20, slot-8);
+  const y = v => T + (H-T-B) * (1 - v/max);
+  let g = '<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y(0)+'" y2="'+y(0)+'"/>';
+  dist.forEach((v,i) => {
+    const cx = L + slot*i + slot/2, x = cx - bw/2;
+    if(v){
+      const yt = y(v), h = y(0)-yt, r = Math.min(4,h);
+      g += '<path fill="var(--brass)" d="M'+x+' '+y(0)+'V'+(yt+r)+'Q'+x+' '+yt+' '+(x+r)+' '+yt+'H'+(x+bw-r)+'Q'+(x+bw)+' '+yt+' '+(x+bw)+' '+(yt+r)+'V'+y(0)+'Z"/>';
+      g += '<text class="val" x="'+cx+'" y="'+(yt-5)+'" text-anchor="middle">'+v+'</text>';
+    }
+    g += '<text class="ax" x="'+cx+'" y="'+(H-5)+'" text-anchor="middle">'+(i+1)+'</text>';
+  });
+  return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Скільки книг отримало кожну оцінку">'+g+'</svg>';
+}
+
+function donutChart(parts, total){
+  const R = 60, C = 2*Math.PI*R, gap = parts.length > 1 ? 2.5 : 0;
+  let off = 0, segs = "";
+  parts.forEach((p,i) => {
+    const len = C * p.count / total;
+    const dash = Math.max(0.5, len - gap);
+    segs += '<circle class="seg'+(statsSel.genre===p.name?" sel":"")+'" data-g="'+esc(p.name)+'" cx="74" cy="74" r="'+R+'" fill="none" stroke="'+p.color+'" stroke-width="22"'
+      + ' stroke-dasharray="'+dash.toFixed(2)+' '+(C-dash).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 74 74)"/>';
+    off += len;
+  });
+  const sel = parts.find(p => p.name === statsSel.genre);
+  const c1 = sel ? sel.count : total, c2 = sel ? sel.name.toUpperCase() : plural(total,"КНИГА","КНИГИ","КНИГ");
+  return '<svg class="donut'+(sel?" dim":"")+'" viewBox="0 0 148 148" role="img" aria-label="Жанри прочитаних книг">'+segs
+    + '<text class="c1" x="74" y="76" text-anchor="middle">'+c1+'</text>'
+    + '<text class="c2" x="74" y="93" text-anchor="middle">'+esc(c2.length > 16 ? c2.slice(0,15)+"…" : c2)+'</text></svg>';
+}
+
+function renderStats(){
+  const body = $("statsBody"); if(!body) return;
+  const curY = new Date().getFullYear();
+  const readAll = state.books.filter(b => b.status === "read");
+  const years = [...new Set(readAll.map(readYear).filter(Boolean).concat([curY]).concat(Object.keys(state.goals).map(Number)))].sort((a,b)=>b-a);
+  if(statsYear !== "all" && !years.includes(statsYear)) statsYear = curY;
+  $("yearTabs").innerHTML = years.map(y => '<button class="tab'+(statsYear===y?" on":"")+'" data-y="'+y+'">'+y+'</button>').join("")
+    + '<button class="tab'+(statsYear==="all"?" on":"")+'" data-y="all">Усі роки</button>';
+  $("yearTabs").querySelectorAll("[data-y]").forEach(b => b.onclick = () => { statsYear = b.dataset.y === "all" ? "all" : +b.dataset.y; statsSel = {month:null, genre:null}; renderStats(); });
+
+  const books = statsYear === "all" ? readAll : readAll.filter(b => readYear(b) === statsYear);
+  $("stY").textContent = statsYear === "all" ? "УСІ РОКИ" : statsYear;
+  $("stN").textContent = books.length;
+  const goal = statsYear !== "all" ? state.goals[statsYear] : null;
+  $("stSub").textContent = goal ? "ІЗ " + goal : plural(books.length,"КНИГА","КНИГИ","КНИГ");
+
+  let h = "";
+
+  /* — мета на рік — */
+  if(statsYear !== "all"){
+    if(goal){
+      const done = books.length, pct = Math.min(100, done / goal * 100);
+      const start = new Date(statsYear, 0, 1), end = new Date(statsYear + 1, 0, 1), now = new Date();
+      const frac = statsYear < curY ? 1 : statsYear > curY ? 0 : (now - start) / (end - start);
+      const expected = goal * frac, diff = done - expected;
+      let msg;
+      if(done >= goal) msg = "Мету виконано! " + (statsYear === curY ? "Можна підняти планку — " + esc(state.mascotName) + " не заперечує." : "Гарний був рік.");
+      else if(statsYear < curY) msg = "Прочитано " + Math.round(pct) + "% мети. Новий рік — нові книжки.";
+      else if(statsYear > curY) msg = "Рік ще не почався. Мета чекає.";
+      else {
+        const left = goal - done, monthsLeft = Math.max(0.5, 12 - now.getMonth() - now.getDate()/31);
+        const per = left / monthsLeft;
+        const perTxt = per <= 1.05 ? "приблизно книга на місяць" : "приблизно " + fmt1(per) + " на місяць";
+        if(diff >= 0.5) msg = "Випереджаєш графік на " + Math.round(diff) + " " + plural(Math.round(diff),"книгу","книги","книг") + ". Лишилось " + left + " — " + perTxt + ".";
+        else if(diff > -0.5) msg = "Точно за графіком. Лишилось " + left + " — " + perTxt + ".";
+        else msg = "Відстаєш від графіка на " + Math.round(-diff) + " " + plural(Math.round(-diff),"книгу","книги","книг") + ". Щоб встигнути — " + perTxt + ".";
+      }
+      h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">Мета на '+statsYear+'</h3><button class="btn ghost sm" id="goalEdit" style="height:30px">Змінити</button></div>'
+        + '<div class="goal-num"><b>'+done+'</b><span>з '+goal+' '+plural(goal,"книги","книг","книг")+'</span></div>'
+        + '<div class="goal-bar"><i style="width:'+pct+'%"></i>'
+        + (statsYear === curY && done < goal ? '<span class="today" style="left:calc('+(frac*100).toFixed(1)+'% - 1px)" data-l="сьогодні"></span>' : '')
+        + '</div><div class="goal-msg">'+msg+'</div></section>';
+    } else {
+      h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">Мета на '+statsYear+'</h3></div>'
+        + '<div class="small">Скільки книжок хочеш прочитати за рік? Я рахуватиму, чи встигаєш, і підкажу темп.</div>'
+        + '<button class="btn wide" id="goalEdit" style="margin-top:12px">Поставити мету</button></section>';
+    }
+  }
+
+  if(!books.length){
+    body.innerHTML = h + '<section class="card stat-empty"><div id="statOwl" style="display:flex;justify-content:center"></div>'
+      + '<p>'+(statsYear === "all" ? "Ще жодної прочитаної книжки. Перша — найважливіша!" : "У " + statsYear + " ще нічого не прочитано. Почнемо?")+'</p></section>';
+    $("statOwl").appendChild(owlEl({h:110, mood:"sleep"}));
+    if($("goalEdit")) $("goalEdit").onclick = openGoal;
+    return;
+  }
+
+  /* — плитки — */
+  const rated = books.filter(b => b.rating);
+  const durs = books.filter(b => b.startedAt && b.readAt).map(b => Math.max(1, dayDiff(b.startedAt, b.readAt) + 1));
+  const authors = {};
+  books.forEach(b => (b.author || "").split(",").map(a=>a.trim()).filter(Boolean).forEach(a => authors[a] = (authors[a]||0) + 1));
+  h += '<div class="tiles">'
+    + '<div class="tile"><div class="mono">Прочитано</div><div class="v">'+books.length+'</div><div class="h">'+plural(books.length,"книга","книги","книг")+'</div></div>'
+    + '<div class="tile"><div class="mono">Середня оцінка</div><div class="v">'+(rated.length ? fmt1(avg(rated.map(b=>b.rating))) + '<small>/ 10</small>' : '—')+'</div><div class="h">'+(rated.length ? "оцінено " + rated.length : "ще немає оцінок")+'</div></div>'
+    + '<div class="tile"><div class="mono">Днів на книгу</div><div class="v">'+(durs.length ? Math.round(avg(durs)) : '—')+'</div><div class="h">'+(durs.length ? "у середньому" : "вкажи, коли почала")+'</div></div>'
+    + '<div class="tile"><div class="mono">Авторів</div><div class="v">'+Object.keys(authors).length+'</div><div class="h">різних</div></div>'
+    + '</div>';
+
+  /* — по місяцях — */
+  if(statsYear !== "all"){
+    const counts = Array(12).fill(0), titles = Array.from({length:12}, ()=>[]);
+    books.forEach(b => { const m = new Date(b.readAt).getMonth(); counts[m]++; titles[m].push(b.title); });
+    const cm = statsYear === curY ? new Date().getMonth() : -1;
+    const mx = Math.max(...counts), bestM = counts.map((c,i)=>c===mx?i:-1).filter(i=>i>=0);
+    const bestTxt = bestM.length === 1
+      ? "Найчитабельніший місяць — " + MONTHS_FULL[bestM[0]].toLowerCase() + " (" + mx + ")."
+      : "Найбільше — по " + mx + " на місяць: " + bestM.slice(0,3).map(i=>MONTHS_FULL[i].toLowerCase()).join(", ") + (bestM.length > 3 ? "…" : ".");
+    const note = statsSel.month !== null
+      ? (counts[statsSel.month] ? MONTHS_FULL[statsSel.month] + ": " + titles[statsSel.month].map(t=>"«"+esc(t)+"»").join(", ") : MONTHS_FULL[statsSel.month] + ": нічого")
+      : bestTxt + " Торкнись стовпчика, щоб побачити книжки.";
+    h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">По місяцях</h3></div><div id="monthsBox">'+monthsChart(counts, cm)+'</div>'
+      + '<div class="chart-note" id="monthNote">'+note+'</div></section>';
+  } else {
+    const byY = {};
+    readAll.forEach(b => { const y = readYear(b); if(y) byY[y] = (byY[y]||0) + 1; });
+    const ys = Object.keys(byY).sort();
+    if(ys.length > 1){
+      h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">По роках</h3></div>'
+        + ys.map(y => '<div class="meter"><span>'+y+'</span><span class="tr"><i style="width:'+(byY[y]/Math.max(...Object.values(byY))*100)+'%"></i></span><b>'+byY[y]+'</b></div>').join("") + '</section>';
+    }
+  }
+
+  /* — жанри — */
+  const gcount = {};
+  books.forEach(b => { const g = b.tag || "Без жанру"; gcount[g] = (gcount[g]||0) + 1; });
+  const cmap = genreColorMap();
+  const named = Object.keys(gcount).filter(g => cmap[g]).sort((a,b)=>gcount[b]-gcount[a]);
+  const rest = Object.keys(gcount).filter(g => !cmap[g]);
+  const parts = named.map(g => ({name:g, count:gcount[g], color:cmap[g]}));
+  const restN = rest.reduce((a,g)=>a+gcount[g],0);
+  if(restN) parts.push({name: rest.length === 1 ? rest[0] : "Інше", count:restN, color: isDark() ? GENRE_COLORS.otherDark : GENRE_COLORS.otherLight, others:rest});
+  h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">Жанри</h3><span class="mono">'+Object.keys(gcount).length+' '+plural(Object.keys(gcount).length,"жанр","жанри","жанрів")+'</span></div>'
+    + '<div class="donut-wrap"><div id="donutBox">'+donutChart(parts, books.length)+'</div><div class="legend">'
+    + parts.map(p => '<div class="lg'+(statsSel.genre===p.name?" sel":"")+'" data-g="'+esc(p.name)+'"><i style="background:'+p.color+'"></i><span>'+esc(p.name)+'</span><b>'+p.count+' · '+Math.round(p.count/books.length*100)+'%</b></div>').join("")
+    + '</div></div>'
+    + (parts.some(p=>p.others && p.others.length > 1) ? '<div class="chart-note">Інше: '+esc(parts.find(p=>p.others).others.join(", "))+'</div>' : '')
+    + (gcount["Без жанру"] ? '<div class="chart-note">Жанр можна додати в картці книги → «Редагувати».</div>' : '')
+    + '</section>';
+
+  /* — оцінки — */
+  if(rated.length){
+    const dist = Array(10).fill(0);
+    rated.forEach(b => dist[b.rating - 1]++);
+    const top = rated.slice().sort((a,b)=>b.rating-a.rating || (b.readAt||"").localeCompare(a.readAt||"")).slice(0,3);
+    h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">Оцінки</h3><span class="mono">★ '+fmt1(avg(rated.map(b=>b.rating)))+'</span></div>'
+      + ratingsChart(dist)
+      + '<div class="mono" style="margin-top:14px">Найкращі</div><div class="toplist">'
+      + top.map(b => '<div class="tb" data-open="'+b.id+'">'+miniCover(b,"tb-c")+'<div class="tb-t"><div>'+esc(b.title)+'</div><div class="small">'+esc(b.author||"")+'</div></div><div class="tb-r">'+b.rating+' ★</div></div>').join("")
+      + '</div></section>';
+  }
+
+  /* — настрій книжок — */
+  const withT = books.filter(b => b.traits && Object.keys(b.traits).length);
+  const trAvg = TRAITS.map(t => { const v = withT.map(b=>b.traits[t.k]).filter(Boolean); return {t, v: v.length ? avg(v) : 0, n: v.length}; });
+  if(trAvg.some(x=>x.n)){
+    const q = trAvg.filter(x=>x.t.g==="q" && x.n), m = trAvg.filter(x=>x.t.g==="m" && x.n);
+    const topMood = m.slice().sort((a,b)=>b.v-a.v)[0];
+    const row = (x, mood) => '<div class="meter'+(mood?" mood":"")+'"><span>'+x.t.e+' '+x.t.n+'</span><span class="tr"><i style="width:'+(x.v/5*100)+'%"></i></span><b>'+fmt1(x.v)+'</b></div>';
+    h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">Твої книжки</h3><span class="mono">середнє з 5</span></div>'
+      + (q.length ? '<div class="mono">Якість</div>' + q.map(x=>row(x,false)).join("") : '')
+      + (m.length ? '<div class="mono" style="margin-top:14px">Яка вона</div>' + m.map(x=>row(x,true)).join("") : '')
+      + (topMood ? '<div class="chart-note" style="margin-top:12px">Найчастіше твої книжки — '+topMood.t.n.toLowerCase()+'.</div>' : '')
+      + '</section>';
+  } else if(books.length){
+    h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">Твої книжки</h3></div><div class="small">Оціни кілька книжок детально (сюжет, стиль, затишність…) — тут зʼявиться портрет твого читання.</div></section>';
+  }
+
+  /* — цікаве — */
+  const facts = [];
+  const favA = Object.entries(authors).sort((a,b)=>b[1]-a[1])[0];
+  if(favA && favA[1] > 1) facts.push(["УЛЮБЛЕНИЙ АВТОР", favA[0] + " · " + favA[1]]);
+  const withDur = books.filter(b => b.startedAt && b.readAt).map(b => ({b, d: Math.max(1, dayDiff(b.startedAt, b.readAt) + 1)}));
+  if(withDur.length){
+    const fast = withDur.slice().sort((a,b)=>a.d-b.d)[0], slow = withDur.slice().sort((a,b)=>b.d-a.d)[0];
+    facts.push(["НАЙШВИДШЕ", "«" + fast.b.title + "» · " + fast.d + " дн."]);
+    if(withDur.length > 1 && slow.b !== fast.b) facts.push(["НАЙДОВШЕ", "«" + slow.b.title + "» · " + slow.d + " дн."]);
+  }
+  const last = books.slice().sort((a,b)=>(b.readAt||"").localeCompare(a.readAt||""))[0];
+  if(last) facts.push(["ОСТАННЯ", "«" + last.title + "»"]);
+  if(facts.length){
+    h += '<section class="card facts"><div class="card-hd"><h3 class="card-ttl">Цікаве</h3></div>'
+      + facts.map(([k,v]) => '<div class="fld"><span>'+k+'</span><i></i><b>'+esc(v)+'</b></div>').join("") + '</section>';
+  }
+
+  body.innerHTML = h;
+  if($("goalEdit")) $("goalEdit").onclick = openGoal;
+  body.querySelectorAll("#monthsBox .hit").forEach(r => r.onclick = () => { const m = +r.dataset.m; statsSel.month = statsSel.month === m ? null : m; renderStats(); });
+  body.querySelectorAll("#donutBox .seg, .legend .lg").forEach(el => el.onclick = () => { const g = el.dataset.g; statsSel.genre = statsSel.genre === g ? null : g; renderStats(); });
+  body.querySelectorAll("[data-open]").forEach(el => el.onclick = () => openDetail(el.dataset.open));
+}
+
+function openGoal(){
+  const y = statsYear === "all" ? new Date().getFullYear() : statsYear;
+  const cur = state.goals[y] || "";
+  openSheet(head("Мета на " + y, "Скільки книжок хочеш прочитати?")
+    + '<input class="inp" id="goalInp" type="number" inputmode="numeric" min="1" max="500" placeholder="24" value="'+cur+'" style="font-size:22px;font-weight:800;text-align:center;height:56px" />'
+    + '<div class="chips" style="margin-top:10px;justify-content:center">' + [6,12,24,36,52].map(n=>'<button class="chip" data-n="'+n+'">'+n+'</button>').join("") + '</div>'
+    + '<div class="small" style="text-align:center;margin-top:8px">12 — книга на місяць · 52 — книга на тиждень</div>'
+    + '<div class="row" style="margin-top:16px">'+(cur ? '<button class="btn danger" id="goalDel">Прибрати мету</button>' : '<button class="btn ghost" id="goalNo">Скасувати</button>')+'<button class="btn" id="goalOk">Зберегти</button></div>');
+  document.querySelectorAll("[data-n]").forEach(c => c.onclick = () => { $("goalInp").value = c.dataset.n; });
+  $("goalOk").onclick = () => {
+    const n = parseInt($("goalInp").value, 10);
+    if(!n || n < 1){ toast("Вкажи число книжок"); return; }
+    state.goals[y] = Math.min(500, n);
+    closeModal(); renderAll(); scheduleSave(); toast("Мета на " + y + ": " + state.goals[y] + " " + plural(state.goals[y],"книга","книги","книг"));
+  };
+  if($("goalDel")) $("goalDel").onclick = () => { delete state.goals[y]; closeModal(); renderAll(); scheduleSave(); };
+  if($("goalNo")) $("goalNo").onclick = closeModal;
+}
+
 /* ═══ НАВІГАЦІЯ ═══ */
 function setPage(p, fromHistory){
   const prev = currentPage;
   currentPage = p;
   $("viewShelf").classList.toggle("hidden", p!=="shelf");
+  $("viewStats").classList.toggle("hidden", p!=="stats");
+  $("navStats").classList.toggle("on", p==="stats");
   $("viewShop").classList.toggle("hidden", p!=="shop");
   $("viewSettings").classList.toggle("hidden", p!=="settings");
   $("navShelf").classList.toggle("on", p==="shelf");
@@ -1001,6 +1466,7 @@ function setPage(p, fromHistory){
 }
 $("navShelf").onclick = ()=>setPage("shelf");
 $("navShop").onclick = ()=>setPage("shop");
+$("navStats").onclick = ()=>{ renderStats(); setPage("stats"); };
 $("navSettings").onclick = ()=>setPage("settings");
 $("navAdd").onclick = ()=>openBookForm();
 $("quickAdd").onclick = ()=>openBookForm();
@@ -1067,8 +1533,9 @@ async function searchWiki(q){
     const authors = vals("P50").map(v=>v.id).slice(0,2);
     authors.forEach(a=>authorIds.add(a));
     const years = vals("P577").map(v => parseInt((v.time||"").slice(1,5), 10)).filter(Boolean);
+    const gid = vals("P136").concat(vals("P31")).map(v=>v.id).find(id => WD_GENRE[id]);
     books.push({title: cleanWikiTitle(p.title), authors, year: years.length ? String(Math.min(...years)) : "",
-                cover: p.thumbnail ? p.thumbnail.source : null, src:"Вікіпедія"});
+                cover: p.thumbnail ? p.thumbnail.source : null, genre: gid ? WD_GENRE[gid] : "", src:"Вікіпедія"});
   });
   let names = {};
   if(authorIds.size){
@@ -1077,7 +1544,7 @@ async function searchWiki(q){
       Object.entries(a.entities || {}).forEach(([k,v]) => { const l = v.labels && (v.labels.uk || v.labels.en); if(l) names[k] = prettyName(l.value); });
     }catch(e){}
   }
-  return books.map(b => ({title:b.title, author:b.authors.map(a=>names[a]).filter(Boolean).join(", "), year:b.year, cover:b.cover, src:b.src}));
+  return books.map(b => ({title:b.title, author:b.authors.map(a=>names[a]).filter(Boolean).join(", "), year:b.year, cover:b.cover, genre:b.genre, src:b.src}));
 }
 async function searchOpenLibrary(q){
   const d = await fetchJSON("https://openlibrary.org/search.json?limit=10&fields=title,author_name,first_publish_year,cover_i&q=" + encodeURIComponent(q));
@@ -1181,26 +1648,59 @@ function openBookForm(existing){
     + Object.entries(STATUSES).map(([k,v])=>'<button data-s="'+k+'" class="'+(b.status===k?"on":"")+'">'+v+'</button>').join("") + '</div>'
     + '<label class="lbl mono" for="fTitle">Назва</label><input class="inp" id="fTitle" placeholder="Назва книги" value="'+esc(b.title)+'" />'
     + '<label class="lbl mono" for="fAuthor">Автор</label><input class="inp" id="fAuthor" placeholder="Автор" value="'+esc(b.author||"")+'" />'
-    + '<label class="lbl mono" for="fTag">Жанр або тег</label><input class="inp" id="fTag" placeholder="наприклад, детектив" value="'+esc(b.tag||"")+'" />'
+    + '<div id="datesBox"></div>'
+    + '<label class="lbl mono">Жанр</label><div class="chips" id="genreChips"></div>'
     + '<label class="lbl mono" for="fNote">Враження</label><textarea class="inp" id="fNote" rows="3" placeholder="Кілька слів для себе">'+esc(b.note||"")+'</textarea>'
     + '<label class="lbl mono">Обкладинка</label><div class="preview contain hidden" id="fCoverPreview" style="height:130px"></div>'
     + '<label class="filebtn" for="fCover">'+UPICON+'Своє фото обкладинки<span class="fname" id="fCoverName"></span></label><input type="file" accept="image/*" id="fCover" />'
     + '<button class="btn wide" id="fSave" style="margin-top:16px">'+(existing?"Зберегти":"Поставити на полицю")+'</button>'
   );
-  let status = b.status, cover = b.cover, coverUrl = b.coverUrl;
+  let status = b.status, cover = b.cover, coverUrl = b.coverUrl, genre = b.tag || "";
+  const today = ymd(new Date().toISOString());
+  let started = b.startedAt ? ymd(b.startedAt) : today, finished = b.readAt ? ymd(b.readAt) : today;
   function showCover(src){
     const p = $("fCoverPreview");
     if(src){ p.style.backgroundImage = "url("+src+")"; p.classList.remove("hidden"); } else p.classList.add("hidden");
   }
   showCover(cover || coverUrl);
+  function renderDates(){
+    const box = $("datesBox");
+    if(status === "planned"){ box.innerHTML = ""; return; }
+    box.innerHTML = '<div class="dates">'
+      + '<div><label class="lbl mono" for="fStart">Почала</label><input class="inp" type="date" id="fStart" max="'+today+'" value="'+(started||"")+'" /></div>'
+      + (status === "read" ? '<div><label class="lbl mono" for="fEnd">Дочитала</label><input class="inp" type="date" id="fEnd" max="'+today+'" value="'+finished+'" /></div>' : '<div></div>')
+      + '</div>';
+    $("fStart").onchange = e => { started = e.target.value; };
+    if($("fEnd")) $("fEnd").onchange = e => { finished = e.target.value; };
+  }
+  function renderGenres(){
+    const used = state.books.map(x=>x.tag).filter(t => t && !GENRES.includes(t));
+    const list = GENRES.concat([...new Set(used)]);
+    if(genre && !list.includes(genre)) list.push(genre);
+    $("genreChips").innerHTML = list.map(g => '<button class="chip'+(g===genre?" on":"")+'" data-g="'+esc(g)+'">'+esc(g)+'</button>').join("")
+      + '<button class="chip add" id="genreAdd">+ свій</button>';
+    $("genreChips").querySelectorAll("[data-g]").forEach(c => c.onclick = () => { genre = genre === c.dataset.g ? "" : c.dataset.g; renderGenres(); });
+    $("genreAdd").onclick = () => {
+      const box = $("genreChips");
+      box.insertAdjacentHTML("beforeend", '<input class="inp" id="genreNew" placeholder="Назва жанру" style="height:40px;margin-top:4px" />');
+      $("genreAdd").remove();
+      const inp = $("genreNew"); inp.focus();
+      const done = () => { const v = inp.value.trim(); if(v) genre = v.charAt(0).toUpperCase() + v.slice(1); renderGenres(); };
+      inp.onkeydown = e => { if(e.key === "Enter"){ e.preventDefault(); done(); } };
+      inp.onblur = done;
+    };
+  }
+  renderDates(); renderGenres();
   document.querySelectorAll("#segStatus button").forEach(btn=>btn.onclick=()=>{
     status = btn.dataset.s;
     document.querySelectorAll("#segStatus button").forEach(x=>x.classList.toggle("on", x===btn));
+    renderDates();
   });
   if(!existing){
     wireSearch(async picked=>{
       $("fTitle").value = picked.title;
       $("fAuthor").value = picked.author || "";
+      if(picked.genre && !genre){ genre = picked.genre; renderGenres(); }
       cover = null; coverUrl = null;
       if(picked.cover){
         showCover(picked.cover); coverUrl = picked.cover;
@@ -1219,25 +1719,36 @@ function openBookForm(existing){
   $("fSave").onclick = () => {
     const title = $("fTitle").value.trim();
     if(!title){ $("fTitle").focus(); toast("Напиши назву книги"); return; }
-    const data = {title, author: $("fAuthor").value.trim(), tag: $("fTag").value.trim(), note: $("fNote").value.trim(), status, cover, coverUrl};
+    const data = {title, author: $("fAuthor").value.trim(), tag: genre, note: $("fNote").value.trim(), status, cover, coverUrl};
     let earned = false, target;
     if(existing){
       const idx = state.books.findIndex(x=>x.id===existing.id);
       const wasRead = state.books[idx].status === "read";
       state.books[idx] = Object.assign(state.books[idx], data);
       target = state.books[idx];
-      if(!wasRead && status==="read"){ markRead(target); earned = true; }
+      if(!wasRead && status==="read"){ markRead(target, fromYmd(finished)); earned = true; }
     } else {
       target = Object.assign({id:uid("b")}, data);
-      if(status==="read"){ markRead(target); earned = true; }
+      if(status==="read"){ markRead(target, fromYmd(finished)); earned = true; }
       state.books.push(target);
     }
+    if(status !== "planned") target.startedAt = fromYmd(started) || target.startedAt || new Date().toISOString();
+    if(status === "read" && finished){ target.readAt = fromYmd(finished); target.dateRead = longDate(target.readAt) + " " + new Date(target.readAt).getFullYear(); }
+    if(status === "read" && target.startedAt && target.readAt && target.startedAt > target.readAt) target.startedAt = target.readAt;
     closeModal();
     if(earned) celebrate(target);
     renderAll(); scheduleSave();
   };
 }
-function markRead(b){ b.status = "read"; b.dateRead = todayStr(); b.readAt = new Date().toISOString(); }
+function startReading(b){
+  b.status = "reading"; b.startedAt = new Date().toISOString();
+  renderAll(); scheduleSave(); toast("Гарного читання! " + state.mascotName + " читає з тобою");
+}
+function markRead(b, iso){
+  b.status = "read";
+  b.readAt = iso || new Date().toISOString();
+  b.dateRead = longDate(b.readAt) + " " + new Date(b.readAt).getFullYear();
+}
 
 /* ═══ СВЯТКУВАННЯ: штамп «Прочитано» ═══ */
 function confetti(){
@@ -1251,26 +1762,84 @@ function confetti(){
   }
   document.body.appendChild(box); setTimeout(()=>box.remove(), 3400);
 }
-function celebrate(book){
-  state.coins += COINS_PER_BOOK;
-  setTimeout(()=>{
-    const read = countBy("read");
-    const justLeveled = read > 0 && read % PER_LEVEL === 0 && read / PER_LEVEL < LEVELS.length;
-    const lvl = Math.min(LEVELS.length - 1, Math.floor(read / PER_LEVEL));
-    openSheet(
-      '<div id="celebOwl" style="display:flex;justify-content:center"></div>'
-      + '<h3 style="margin-top:6px">'+(justLeveled ? "Новий рівень!" : esc(book ? book.title : "Книга на полиці"))+'</h3>'
-      + '<p class="sub">'+(justLeveled ? "Тепер ти — " + LEVELS[lvl] + "." : esc(state.mascotName) + " ставить штамп у формуляр.")+'</p>'
-      + '<div style="margin:16px 0 4px"><span class="stamp big thump">ПРОЧИТАНО<small>'+dotDate(new Date().toISOString())+'</small></span></div>'
-      + '<div class="big-coin">+'+COINS_PER_BOOK+' ◈</div><p class="sub" style="margin-bottom:16px">монет у гаманець</p>'
-      + '<div class="row"><button class="btn ghost" id="celebOk">Далі</button><button class="btn" id="toShop">У крамницю</button></div>', true);
+const STAR = '<svg viewBox="0 0 24 24"><path d="M12 2.6l2.85 5.95 6.5.85-4.78 4.5 1.2 6.45L12 17.2l-5.77 3.15 1.2-6.45L2.65 9.4l6.5-.85z" stroke-linejoin="round"/></svg>';
+function starsHTML(n, sm){
+  return '<div class="stars'+(sm?" sm":"")+'">' + Array.from({length:10}, (_,i) =>
+    '<button class="star'+(i < (n||0) ? " on" : "")+'" data-v="'+(i+1)+'" aria-label="'+(i+1)+' з 10">'+STAR+'</button>').join("") + '</div>';
+}
+function traitsMini(t){
+  t = t || {};
+  const rows = TRAITS.filter(x => t[x.k]);
+  if(!rows.length) return "";
+  return '<div class="mini-traits">' + rows.map(x =>
+    '<div class="mt'+(x.g==="m"?" mood":"")+'"><span>'+x.e+' '+x.n+'</span><i>'
+    + Array.from({length:5},(_,i)=>'<b'+(i<t[x.k]?' class="on"':'')+'></b>').join("") + '</i></div>').join("") + '</div>';
+}
+
+/* оцінка книги: після прочитання (зі штампом і монетами) або пізніше з картки */
+function openRating(book, celebrateIt){
+  let rating = book.rating || 0;
+  const traits = Object.assign({}, book.traits || {});
+  const read = countBy("read");
+  const justLeveled = celebrateIt && read > 0 && read % PER_LEVEL === 0 && read / PER_LEVEL < LEVELS.length;
+  const lvl = Math.min(LEVELS.length - 1, Math.floor(read / PER_LEVEL));
+  const traitRow = x => '<div class="trait"><div class="trait-hd"><span>'+x.e+' '+x.n+'</span><span class="mono" id="tv_'+x.k+'">'+(traits[x.k] ? traits[x.k]+" / 5" : "—")+'</span></div>'
+    + '<div class="segs'+(x.g==="m"?" mood":"")+'" data-k="'+x.k+'">' + Array.from({length:5},(_,i)=>'<button data-v="'+(i+1)+'" class="'+(i<(traits[x.k]||0)?"on":"")+'" aria-label="'+x.n+' '+(i+1)+'"></button>').join("") + '</div></div>';
+  const anyTraits = TRAITS.some(x => traits[x.k]);
+  openSheet(
+    (celebrateIt
+      ? '<div id="celebOwl" style="display:flex;justify-content:center"></div>'
+        + '<div style="text-align:center"><h3 style="margin-top:6px">'+(justLeveled ? "Новий рівень!" : esc(book.title))+'</h3>'
+        + '<p class="sub">'+(justLeveled ? "Тепер ти — " + LEVELS[lvl] + "." : esc(state.mascotName) + " ставить штамп у формуляр.")+'</p>'
+        + '<div style="margin:14px 0 2px"><span class="stamp big thump">ПРОЧИТАНО<small>'+dotDate(book.readAt || new Date().toISOString())+'</small></span></div>'
+        + '<div class="big-coin">+'+COINS_PER_BOOK+' ◈</div><p class="sub">монет у гаманець</p></div>'
+        + '<div class="divider" style="margin-top:18px"><span class="mono">Оціни книгу</span></div>'
+      : head("Оцінка", esc(book.title)))
+    + '<div style="margin-top:14px" id="starsBox">'+starsHTML(rating)+'</div>'
+    + '<div class="rate-word" id="rateWord"></div>'
+    + '<button class="expander'+(anyTraits?" open":"")+'" id="expBtn">Детальна оцінка <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>'
+    + '<div id="traitsBox"'+(anyTraits?'':' class="hidden"')+'>'
+    + '<div class="trait-grp"><div class="mono">Якість</div>' + TRAITS.filter(x=>x.g==="q").map(traitRow).join("") + '</div>'
+    + '<div class="trait-grp"><div class="mono">Яка вона</div>' + TRAITS.filter(x=>x.g==="m").map(traitRow).join("") + '</div>'
+    + '</div>'
+    + '<div class="row" style="margin-top:18px">'
+    + (celebrateIt ? '<button class="btn ghost" id="toShop">У крамницю</button>' : '<button class="btn ghost" id="rateCancel">Скасувати</button>')
+    + '<button class="btn" id="rateSave">Зберегти</button></div>'
+  );
+  function paintStars(){
+    $("starsBox").querySelectorAll(".star").forEach(st => st.classList.toggle("on", +st.dataset.v <= rating));
+    $("rateWord").innerHTML = rating ? '<b>'+rating+' / 10</b><span class="mono">'+RATE_WORDS[rating]+'</span>' : '<span class="mono">торкнись зірочки</span>';
+  }
+  paintStars();
+  $("starsBox").querySelectorAll(".star").forEach(st => st.onclick = () => { const v = +st.dataset.v; rating = rating === v ? 0 : v; paintStars(); });
+  document.querySelectorAll("#traitsBox .segs").forEach(seg => seg.querySelectorAll("button").forEach(btn => btn.onclick = () => {
+    const k = seg.dataset.k, v = +btn.dataset.v;
+    traits[k] = traits[k] === v ? 0 : v;
+    seg.querySelectorAll("button").forEach(x => x.classList.toggle("on", +x.dataset.v <= traits[k]));
+    $("tv_" + k).textContent = traits[k] ? traits[k] + " / 5" : "—";
+  }));
+  $("expBtn").onclick = () => { $("expBtn").classList.toggle("open"); $("traitsBox").classList.toggle("hidden"); };
+  const save = () => {
+    book.rating = rating || null;
+    Object.keys(traits).forEach(k => { if(!traits[k]) delete traits[k]; });
+    book.traits = traits;
+    scheduleSave(); renderAll();
+  };
+  $("rateSave").onclick = () => { save(); closeModal(); if(rating) toast("Оцінку записано: " + rating + " / 10"); };
+  if(celebrateIt){
     $("sheet").classList.add("shake");
-    const o = owlEl({h:118}); $("celebOwl").appendChild(o);
+    const o = owlEl({h:110}); $("celebOwl").appendChild(o);
     setTimeout(()=>owlAct(o, "cheer"), 380);
     confetti();
-    $("toShop").onclick = ()=>{ closeModal(); setTimeout(()=>setPage("shop"), 30); };
-    $("celebOk").onclick = closeModal;
-  }, 220);
+    $("toShop").onclick = ()=>{ save(); closeModal(); setTimeout(()=>setPage("shop"), 30); };
+  } else {
+    $("rateCancel").onclick = closeModal;
+  }
+}
+
+function celebrate(book){
+  state.coins += COINS_PER_BOOK;
+  setTimeout(()=> openRating(book, true), 220);
 }
 
 /* ═══ КАТАЛОЖНА КАРТКА КНИГИ ═══ */
@@ -1280,6 +1849,8 @@ function openDetail(id){
   const no = String(state.books.indexOf(b) + 1).padStart(4, "0");
   const when = b.readAt ? dotDate(b.readAt) : (b.dateRead || "");
   const fld = (k, v) => v ? '<div class="fld"><span>'+k+'</span><i></i><b>'+esc(v)+'</b></div>' : "";
+  const startedTxt = b.startedAt ? dotDate(b.startedAt) : "";
+  const daysTxt = (b.status === "read" && b.startedAt && b.readAt) ? (Math.max(1, dayDiff(b.startedAt, b.readAt) + 1)) + " дн." : "";
   openSheet(
     '<div class="cat-hd"><span class="mono">Каталожна картка</span><span style="display:flex;gap:10px;align-items:center"><span class="mono">№ '+no+'</span>'+XICON+'</span></div>'
     + '<div class="cat-main">'
@@ -1288,11 +1859,18 @@ function openDetail(id){
     + '</div><div style="flex:1;min-width:0">'
     + '<h3 class="cat-title">'+esc(b.title)+'</h3>'
     + (b.author ? '<div class="cat-author">'+esc(b.author)+'</div>' : '')
-    + '<div class="fields">' + fld("ЖАНР", b.tag) + fld("СТАТУС", STATUSES[b.status].toLowerCase()) + (b.status==="read" ? fld("ДАТА", when) : "") + '</div>'
+    + '<div class="fields">' + fld("ЖАНР", b.tag ? b.tag.toLowerCase() : "") + fld("СТАТУС", STATUSES[b.status].toLowerCase()) + fld("ПОЧАЛА", startedTxt) + (b.status==="read" ? fld("ДОЧИТАЛА", when) + fld("ЧИТАЛА", daysTxt) : "") + '</div>'
+    + (b.status === "read" ? '<div class="cat-stamp"><span class="stamp">ПРОЧИТАНО<small>'+esc(when)+'</small></span></div>' : '')
     + '</div>'
-    + (b.status === "read" ? '<span class="cat-stamp"><span class="stamp">ПРОЧИТАНО<small>'+esc(when)+'</small></span></span>' : '')
     + '</div>'
     + '<div class="hand-note">'+(b.note ? esc(b.note) : '<span style="color:var(--muted)">Тут будуть твої враження…</span>')+'</div>'
+    + (b.status === "read"
+        ? '<div class="rating-box"><div class="row-sp"><span class="mono">Оцінка</span>'
+          + (b.rating ? '<span class="mono">'+b.rating+' / 10 · '+RATE_WORDS[b.rating]+'</span>' : '')
+          + '</div><div style="margin-top:6px">' + (b.rating ? starsHTML(b.rating, true) : '<span class="small">Ще без оцінки</span>') + '</div>'
+          + traitsMini(b.traits)
+          + '<button class="btn soft sm wide" id="dRate" style="margin-top:10px">'+(b.rating || (b.traits && Object.keys(b.traits).length) ? "Змінити оцінку" : "Оцінити книгу")+'</button></div>'
+        : '')
     + (b.status!=="read" ? '<button class="btn wide" id="dRead">Прочитала · +'+COINS_PER_BOOK+' ◈</button>' : '')
     + (b.status==="planned" ? '<button class="btn ghost wide" style="margin-top:8px" id="dReading">Почала читати</button>' : '')
     + (cov ? '' : '<button class="btn soft wide" id="dFindCover" style="margin-top:8px">Знайти обкладинку в каталозі</button>')
@@ -1302,7 +1880,9 @@ function openDetail(id){
   const rd = $("dRead");
   if(rd) rd.onclick = ()=>{ markRead(b); closeModal(); celebrate(b); renderAll(); scheduleSave(); };
   const rg = $("dReading");
-  if(rg) rg.onclick = ()=>{ b.status = "reading"; closeModal(); renderAll(); scheduleSave(); toast("Гарного читання! " + state.mascotName + " читає з тобою"); };
+  if(rg) rg.onclick = ()=>{ startReading(b); closeModal(); };
+  const rr = $("dRate");
+  if(rr) rr.onclick = ()=>{ closeModal(); setTimeout(()=>openRating(b, false), 90); };
   const fc = $("dFindCover");
   if(fc) fc.onclick = ()=>{ closeModal(); setTimeout(()=>openCoverSearch(b.id), 90); };
   $("dEdit").onclick = ()=>{ closeModal(); setTimeout(()=>openBookForm(b), 90); };
@@ -1407,7 +1987,7 @@ $("importFile").onchange = e => {
     openSheet(head("Відновити з копії?", "У копії: " + data.books.length + " " + plural(data.books.length,"книга","книги","книг") + ", " + (data.coins||0) + " монет. Поточна бібліотека буде замінена.")
       + '<div class="row" style="margin-top:8px"><button class="btn ghost" id="impNo">Скасувати</button><button class="btn" id="impYes">Відновити</button></div>');
     $("impYes").onclick = ()=>{
-      state = Object.assign({books:[],coins:0,owned:[],placed:[],custom:[],theme:"lamp",bgImg:null,plankImg:null,mascotName:DEFAULT_NAME,mascotOn:true,nightTheme:true,gbKey:""}, data);
+      state = Object.assign({books:[],coins:0,owned:[],placed:[],custom:[],theme:"lamp",bgImg:null,plankImg:null,mascotName:DEFAULT_NAME,mascotOn:false,nightTheme:true,gbKey:"",goals:{},v5:true}, upgrade(data));
       normalizeState(); closeModal(); applyTheme(); applyNight(); renderAll(); syncUploadUI(); scheduleSave();
       setPage("shelf"); toast("Бібліотеку відновлено");
     };
