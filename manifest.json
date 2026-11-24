@@ -12,8 +12,8 @@
     "fullscreen"
   ],
   "orientation": "portrait",
-  "background_color": "#fbf7ee",
-  "theme_color": "#fbf7ee",
+  "background_color": "#efe8da",
+  "theme_color": "#efe8da",
   "categories": [
     "books",
     "lifestyle",

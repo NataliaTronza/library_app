@@ -1,13 +1,14 @@
 /* Службовий скрипт: дає застосунку працювати без інтернету.
    Змінюй CACHE_VERSION, коли оновлюєш файли — тоді телефон підхопить нову версію. */
 
-const CACHE_VERSION = "biblioteka-v3";
+const CACHE_VERSION = "biblioteka-v4";
 const COVER_CACHE = "biblioteka-covers-v1";
-const COVER_HOSTS = ["covers.openlibrary.org", "books.google.com", "books.googleusercontent.com"];
+const COVER_HOSTS = ["covers.openlibrary.org", "books.google.com", "books.googleusercontent.com", "upload.wikimedia.org"];
 const CORE = [
   "./",
   "./index.html",
   "./manifest.json",
+  "./fonts.css",
   "./icon-192.png",
   "./icon-512.png",
   "./icon-maskable-192.png",
@@ -61,7 +62,7 @@ self.addEventListener("fetch", event => {
   }
 
   // Пошук у базі книжок завжди йде в мережу, не з кешу
-  if (url.hostname === "www.googleapis.com" || url.hostname === "openlibrary.org") return;
+  if (["www.googleapis.com", "openlibrary.org", "uk.wikipedia.org", "www.wikidata.org"].includes(url.hostname)) return;
 
   // Шрифти: спершу з кешу, у фоні оновлюємо
   if (isFont) {
