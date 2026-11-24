@@ -1,7 +1,7 @@
 {
   "name": "Моя бібліотека",
   "short_name": "Бібліотека",
-  "description": "Полиця прочитаних книг, плани читання, монети та предмети для полиці.",
+  "description": "Полиця прочитаних книг, плани читання, сова-читачка, монети та предмети для полиці.",
   "lang": "uk",
   "dir": "ltr",
   "start_url": "./index.html",
@@ -12,8 +12,8 @@
     "fullscreen"
   ],
   "orientation": "portrait",
-  "background_color": "#F1E7D3",
-  "theme_color": "#F1E7D3",
+  "background_color": "#fbf7ee",
+  "theme_color": "#fbf7ee",
   "categories": [
     "books",
     "lifestyle",

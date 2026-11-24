@@ -1,7 +1,7 @@
 /* Службовий скрипт: дає застосунку працювати без інтернету.
    Змінюй CACHE_VERSION, коли оновлюєш файли — тоді телефон підхопить нову версію. */
 
-const CACHE_VERSION = "biblioteka-v2";
+const CACHE_VERSION = "biblioteka-v3";
 const COVER_CACHE = "biblioteka-covers-v1";
 const COVER_HOSTS = ["covers.openlibrary.org", "books.google.com", "books.googleusercontent.com"];
 const CORE = [
@@ -13,7 +13,11 @@ const CORE = [
   "./icon-maskable-192.png",
   "./icon-maskable-512.png",
   "./apple-touch-icon.png",
-  "./favicon.png"
+  "./favicon.png",
+  "./owl-spring.png",
+  "./owl-summer.png",
+  "./owl-autumn.png",
+  "./owl-winter.png"
 ];
 
 self.addEventListener("install", event => {
