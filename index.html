@@ -10,9 +10,9 @@
 <meta name="apple-mobile-web-app-title" content="Бібліотека" />
 <meta name="application-name" content="Бібліотека" />
 <link rel="manifest" href="manifest.json" />
-<link rel="apple-touch-icon" href="apple-touch-icon.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon-owl.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="owl-icon-192.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon-owl.png" />
 <link rel="stylesheet" href="fonts.css" />
 <title>Бібліотека</title>
 <style>
@@ -750,6 +750,7 @@ const ART = {
 };
 const SHOP = [
   {id:"plant",name:"Рослина",price:30},{id:"tea",name:"Чашка чаю",price:30},
+  {id:"candle-slow",name:"Свічка «Slow days»",price:30,src:"item-candle-slowdays.png",w:92},
   {id:"candle",name:"Свічка",price:45},{id:"stack",name:"Стосик книг",price:45},
   {id:"lamp",name:"Лампа",price:60},{id:"frame",name:"Фоторамка",price:60},
   {id:"crystal",name:"Кристал",price:75},{id:"clock",name:"Годинник",price:75},
@@ -1012,7 +1013,8 @@ function bookEl(b){
 }
 
 function allItems(){ return SHOP.concat(state.custom); }
-function itemArt(item){ return item.img ? '<img src="'+item.img+'" alt="">' : (ART[item.id] || ""); }
+const itemPic = item => item.img || item.src || null;
+function itemArt(item){ return itemPic(item) ? '<img src="'+itemPic(item)+'" alt="">' : (ART[item.id] || ""); }
 
 function renderShelves(){
   const host = $("shelves");
@@ -1085,7 +1087,8 @@ function renderShelves(){
       if(!item) return;
       const d = document.createElement("div");
       d.className = "decor";
-      d.innerHTML = item.img ? '<img src="'+item.img+'" alt="" style="max-width:74px;max-height:112px;object-fit:contain">' : (ART[item.id] || "");
+      if(item.w) d.style.width = item.w + "px";
+      d.innerHTML = itemPic(item) ? '<img src="'+itemPic(item)+'" alt="" style="max-width:'+(item.w||74)+'px;max-height:112px;object-fit:contain">' : (ART[item.id] || "");
       row.appendChild(d);
     });
     const plank = document.createElement("div");
