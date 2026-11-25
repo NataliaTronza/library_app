@@ -405,6 +405,49 @@ body.night .stamp{mix-blend-mode:normal}
 .chip.add{border-style:dashed;color:var(--accent-ink)}
 .dates{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 input[type=date].inp{font-family:var(--mono);font-size:14px;padding:0 10px}
+input[type=date].inp.empty{color:var(--muted)}
+.lbl-hint{text-transform:none;letter-spacing:0;color:var(--muted)}
+.lbl-row{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.lbl-x{font-family:var(--mono);font-size:10.5px;color:var(--stamp);padding:4px 2px;margin-top:10px}
+.seg-sm button{height:36px;font-size:12px;padding:0 4px}
+.date-hint{margin-top:8px}
+.year-pick{display:grid;grid-template-columns:46px 1fr 46px;gap:6px}
+.year-pick select.inp{font-family:var(--mono);font-size:17px;text-align:center;text-align-last:center;cursor:pointer}
+.yp-btn{height:48px;border-radius:10px;background:var(--card2);border:1.5px solid var(--rule2);font-size:22px;font-weight:700;color:var(--accent-ink);line-height:1}
+.yp-btn:active{transform:scale(.94)}
+/* мої жанри в «Я» */
+.my-genres{display:flex;flex-wrap:wrap;gap:6px}
+.gchip{display:inline-flex;align-items:center;gap:2px;height:34px;padding:0 4px 0 12px;border-radius:9px;background:var(--card2);border:1.5px solid var(--rule);font-size:13px;font-weight:700;color:var(--ink)}
+.gchip button{width:28px;height:28px;border-radius:7px;color:var(--muted);font-size:17px;line-height:1}
+.gchip.sure{border-color:var(--stamp);color:var(--stamp)}
+.gchip.sure button{color:#fffaf1;background:var(--stamp);width:auto;padding:0 8px;font-size:12px;font-weight:800}
+.genre-add{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px}
+.genre-add .inp{height:42px;font-size:15px}
+.genre-add .btn{height:42px}
+
+/* ═══ перетягування книжок ═══ */
+.book{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.book img{-webkit-user-drag:none;pointer-events:none}
+.book.drag-src{opacity:.22;filter:grayscale(.6);transform:none!important;transition:opacity .15s}
+.book.nudge-l{transform:translateX(-11px)!important}
+.book.nudge-r{transform:translateX(11px)!important}
+.book.landed{animation:landed .5s cubic-bezier(.3,1.45,.5,1)}
+@keyframes landed{0%{transform:translateY(-16px) scale(1.06)}100%{transform:none}}
+.drag-ghost{position:fixed;left:0;top:0;z-index:70;pointer-events:none;margin:0;transition:none!important;
+  box-shadow:0 22px 34px rgba(0,0,0,.38),0 4px 10px rgba(0,0,0,.2)!important;will-change:transform}
+.drag-ghost.lifting{transition:transform .18s cubic-bezier(.3,1.3,.5,1)!important}
+.drop-mark{position:fixed;z-index:69;width:4px;border-radius:3px;background:var(--brass);pointer-events:none;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--brass) 28%,transparent),0 0 16px var(--brass);transition:left .12s,top .12s,opacity .12s}
+.drop-mark.off{opacity:0}
+body.dragging,body.dragging *{-webkit-user-select:none;user-select:none;cursor:grabbing!important}
+.drag-tip{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:9px 6px 9px 12px;border-radius:12px;
+  background:var(--brass-soft);border:1.5px dashed color-mix(in srgb,var(--brass) 55%,transparent);font-size:13px;font-weight:600;color:var(--ink)}
+.drag-tip svg{flex:none;color:var(--brass)}
+.drag-tip span{flex:1}
+.drag-tip button{width:30px;height:30px;border-radius:8px;color:var(--ink2);font-size:18px;line-height:1;flex:none}
+.meter.undated span:first-child{color:var(--ink2);font-style:italic}
+.meter.undated .tr i{background:var(--rule2)}
+.tiles-note{margin:-4px 2px 14px}
 
 /* ═══ статистика ═══ */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
@@ -563,6 +606,16 @@ input[type=date].inp{font-family:var(--mono);font-size:14px;padding:0 10px}
       <label class="lbl mono" for="gbKey">Ключ Google Books (необовʼязково)</label>
       <input class="inp" id="gbKey" placeholder="AIza…" autocomplete="off" spellcheck="false" />
       <div class="small" style="margin-top:8px" id="gbKeyState"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-hd"><h3 class="card-ttl">Мої жанри</h3><span class="mono" id="myGenresN"></span></div>
+      <div class="small" style="margin-bottom:10px">Жанри, які ти додаєш сама, лишаються у виборі назавжди — поруч зі стандартними.</div>
+      <div class="my-genres" id="myGenres"></div>
+      <div class="genre-add">
+        <input class="inp" id="genreSetInp" placeholder="Новий жанр" maxlength="32" enterkeyhint="done" autocomplete="off" />
+        <button class="btn sm" id="genreSetAdd">Додати</button>
+      </div>
     </section>
 
     <section class="card">
@@ -791,7 +844,8 @@ const GENRE_COLORS = {light:["#1d7f5f","#3a64a8","#c4533a","#8a4a87","#b8861f"],
 const STORAGE_KEY = "library-data-v2";
 
 let state = {books:[], coins:0, owned:[], placed:[], custom:[], theme:"lamp",
-             bgImg:null, plankImg:null, mascotName:DEFAULT_NAME, mascotOn:false, nightTheme:true, gbKey:"", goals:{}, v5:true};
+             bgImg:null, plankImg:null, mascotName:DEFAULT_NAME, mascotOn:false, nightTheme:true, gbKey:"", goals:{}, v5:true,
+             dateMode:"dates", dragTipSeen:false}; /* customGenres зʼявляється в normalizeState — зі старих жанрів книжок */
 let filter = "all", saveTimer = null, lineIndex = 0, currentPage = "shelf", statsYear = new Date().getFullYear();
 
 const $ = id => document.getElementById(id);
@@ -840,11 +894,48 @@ function normalizeState(){
   const OLD = {stezhka:"lamp", lumo:"lavender", night:"lamp", rose:"bordo", sky:"ink"};
   if(!THEMES[state.theme]) state.theme = OLD[state.theme] || "lamp";
   if(!state.goals || typeof state.goals !== "object") state.goals = {};
+  if(!["dates","year","none"].includes(state.dateMode)) state.dateMode = "dates";
   state.books.forEach(b => {
-    if(b.status === "read" && !b.readAt){ const iso = parseUkDate(b.dateRead); if(iso) b.readAt = iso; }
+    if(b.status === "read" && !b.readAt && !b.readYearOnly){
+      const iso = parseUkDate(b.dateRead);
+      if(iso) b.readAt = iso;
+      else { const m = (b.dateRead || "").match(/(\d{4})/); if(m) b.readYearOnly = +m[1]; }
+    }
     if(b.traits && typeof b.traits !== "object") b.traits = {};
+    /* кілька жанрів: tags — масив, tag лишається першим жанром для старих копій */
+    if(!Array.isArray(b.tags)) b.tags = b.tag ? [b.tag] : [];
+    b.tags = [...new Set(b.tags.filter(t => typeof t === "string" && t.trim()).map(t => t.trim()))];
+    b.tag = b.tags[0] || "";
   });
+  /* власні жанри: ті, що вже траплялись у книжках, переходять у постійний список */
+  if(!Array.isArray(state.customGenres)){
+    state.customGenres = [];
+    state.books.forEach(b => b.tags.forEach(t => { if(!isKnownGenre(t)) state.customGenres.push(t); }));
+  }
+  state.customGenres = [...new Set(state.customGenres.filter(g => typeof g === "string" && g.trim()).map(g => g.trim()))];
+  /* сталий номер картки: перестановка на полиці його не змінює */
+  let maxNo = state.books.reduce((m, b) => Math.max(m, +b.no || 0), 0);
+  state.books.forEach(b => { if(!(+b.no > 0)) b.no = ++maxNo; });
 }
+const nextBookNo = () => state.books.reduce((m, b) => Math.max(m, +b.no || 0), 0) + 1;
+const sameGenre = (a, b) => a.toLocaleLowerCase("uk") === b.toLocaleLowerCase("uk");
+function isKnownGenre(g){
+  return GENRES.some(x => sameGenre(x, g)) || (Array.isArray(state.customGenres) && state.customGenres.some(x => sameGenre(x, g)));
+}
+const bookTags = b => Array.isArray(b.tags) ? b.tags : (b.tag ? [b.tag] : []);
+/* додає власний жанр назавжди; якщо такий уже є — повертає наявний */
+function addCustomGenre(v){
+  v = (v || "").trim().replace(/\s+/g, " ").slice(0, 32);
+  if(!v) return null;
+  v = v.charAt(0).toLocaleUpperCase("uk") + v.slice(1);
+  const known = GENRES.concat(state.customGenres).find(x => sameGenre(x, v));
+  if(known) return known;
+  state.customGenres.push(v);
+  scheduleSave(); renderGenreSettings();
+  return v;
+}
+/* коли дочитала: точна дата, лише рік або «не памʼятаю» (порожньо) */
+const readWhen = b => b.readAt ? dotDate(b.readAt) : b.readYearOnly ? String(b.readYearOnly) : "";
 /* «12 березня 2026» → ISO */
 function parseUkDate(str){
   const m = (str || "").match(/(\d{1,2})\s+([а-яіїєґ]+)\s+(\d{4})/i);
@@ -853,7 +944,7 @@ function parseUkDate(str){
   if(mi < 0) return null;
   return new Date(+m[3], mi, +m[1], 12).toISOString();
 }
-const readYear = b => b.readAt ? new Date(b.readAt).getFullYear() : null;
+const readYear = b => b.readAt ? new Date(b.readAt).getFullYear() : (+b.readYearOnly || null);
 const ymd = iso => { const d = new Date(iso); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
 const fromYmd = v => { if(!v) return null; const [y,m,d] = v.split("-").map(Number); return new Date(y, m-1, d, 12).toISOString(); };
 const dayDiff = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
@@ -897,16 +988,11 @@ function updateMetaColor(){
 setInterval(applyNight, 60000);
 
 /* ═══ МАЛЮВАННЯ ═══ */
-function renderAll(){ renderHero(); renderNow(); renderTabs(); renderShelves(); renderShop(); renderThemes(); renderMascotSettings(); renderStats(); }
+function renderAll(){ renderHero(); renderNow(); renderTabs(); renderShelves(); renderShop(); renderThemes(); renderMascotSettings(); renderGenreSettings(); renderStats(); }
 
 function readThisYear(){
   const y = new Date().getFullYear();
-  return state.books.filter(b => {
-    if(b.status !== "read") return false;
-    if(b.readAt) return new Date(b.readAt).getFullYear() === y;
-    const m = (b.dateRead || "").match(/(\d{4})/);
-    return m ? +m[1] === y : false;
-  }).length;
+  return state.books.filter(b => b.status === "read" && readYear(b) === y).length;
 }
 
 function mascotLines(){
@@ -922,7 +1008,7 @@ function mascotLines(){
   const gY = new Date().getFullYear(), goal = state.goals[gY], left = goal ? goal - readThisYear() : 0;
   if(goal && left > 0) out.push({mood: nowReading.length ? "read" : "idle", line:"До мети на " + gY + " лишилось " + left + " " + plural(left,"книжка","книжки","книжок") + ". Ми встигнемо!"});
   if(goal && left <= 0) out.push({mood:"idle", line:"Мету на " + gY + " виконано! Може, піднімемо планку?"});
-  const lastRated = state.books.filter(b=>b.status==="read" && b.rating).sort((a,b)=>(b.readAt||"").localeCompare(a.readAt||""))[0];
+  const lastRated = state.books.filter(b=>b.status==="read" && b.rating && b.readAt).sort((a,b)=>b.readAt.localeCompare(a.readAt))[0];
   if(lastRated) out.push({mood:"idle", line:"«" + short(lastRated.title) + "» — " + lastRated.rating + " з 10. " + (lastRated.rating >= 9 ? "Записала в золотий фонд." : lastRated.rating <= 4 ? "Не все ж бути шедеврами." : "Чесна оцінка.")});
   out.push({mood: nowReading.length ? "read" : "idle", line:SEASON_LINES[season()]});
   if(planned && read) out.push({mood:"idle", line:"У планах " + planned + ". Що візьмемо наступною?"});
@@ -1008,8 +1094,186 @@ function bookEl(b){
   el.innerHTML = (cov ? '<img src="'+cov+'" alt="" onerror="this.parentNode.classList.remove(\'has-cover\');this.remove()">' : "")
     + '<div class="bk-title">'+esc(b.title)+'</div><div class="bk-author">'+esc(b.author||"")+'</div>'
     + (b.status === "reading" ? '<span class="bk-flag reading" title="Читаю"></span>' : b.status === "planned" ? '<span class="bk-flag" title="У планах"></span>' : "");
-  el.onclick = () => openDetail(b.id);
+  el.dataset.id = b.id;
+  el.onclick = () => { if(Date.now() - dragEndedAt < 450) return; openDetail(b.id); };
+  el.addEventListener("pointerdown", e => dragPointerDown(e, el, b));
+  el.addEventListener("contextmenu", e => e.preventDefault());
   return el;
+}
+
+/* ═══ ПЕРЕТЯГУВАННЯ КНИЖОК ═══
+   Палець: утримати ~0,35 с, потім вести. Якщо палець рушив раніше — це прокрутка, не перетягування.
+   Миша: просто тягнути. Порядок книжок у state.books і є порядком на полиці. */
+let drag = null, dragEndedAt = 0;
+const DRAG_HOLD = 350, DRAG_SLOP = 9;
+
+function dragPointerDown(e, el, b){
+  if(drag || (e.pointerType === "mouse" && e.button !== 0)) return;
+  const touch = e.pointerType !== "mouse";
+  drag = {b, el, id:e.pointerId, touch, sx:e.clientX, sy:e.clientY, cx:e.clientX, cy:e.clientY, active:false, drop:null};
+  if(touch) drag.timer = setTimeout(() => { if(drag && !drag.active) dragStart(); }, DRAG_HOLD);
+  document.addEventListener("pointermove", dragMove);
+  document.addEventListener("pointerup", dragUp);
+  document.addEventListener("pointercancel", dragCancel);
+}
+function dragMove(e){
+  if(!drag || e.pointerId !== drag.id) return;
+  drag.cx = e.clientX; drag.cy = e.clientY;
+  const moved = Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy);
+  if(!drag.active){
+    if(drag.touch){ if(moved > DRAG_SLOP) dragCleanup(); return; }   /* палець поїхав раніше — це прокрутка */
+    if(moved > 5) dragStart(); else return;
+  }
+  e.preventDefault();
+  positionGhost();
+  updateDrop();
+}
+function dragUp(e){
+  if(!drag || e.pointerId !== drag.id) return;
+  if(drag.active) dragFinish(true); else dragCleanup();
+}
+function dragCancel(e){
+  if(!drag || e.pointerId !== drag.id) return;
+  if(drag.active) dragFinish(false); else dragCleanup();
+}
+/* поки тягнемо пальцем — сторінка не прокручується сама (ми прокручуємо її біля країв) */
+document.addEventListener("touchmove", e => { if(drag && drag.active) e.preventDefault(); }, {passive:false});
+
+function dragStart(){
+  const d = drag;
+  d.active = true;
+  clearTimeout(d.timer);
+  try{ if(navigator.vibrate) navigator.vibrate(12); }catch(e){}
+  try{ window.getSelection().removeAllRanges(); }catch(e){}
+  document.body.classList.add("dragging");
+  /* знімок положень усіх книжок — у координатах документа, щоб прокрутка не збивала */
+  const sx = window.scrollX, sy = window.scrollY;
+  d.slots = [...document.querySelectorAll("#shelves .book")].map(el => {
+    const r = el.getBoundingClientRect();
+    return {el, id:el.dataset.id, l:r.left + sx, r:r.right + sx, t:r.top + sy, b:r.bottom + sy};
+  });
+  d.rows = [];
+  d.slots.forEach(s => {
+    let row = d.rows.find(r => Math.abs(r.t - s.t) < 12);
+    if(!row){ row = {t:s.t, b:s.b, items:[]}; d.rows.push(row); }
+    row.items.push(s);
+  });
+  d.rows.forEach(r => r.items.sort((a,b) => a.l - b.l));
+  d.order = d.slots.map(s => s.id);   /* порядок видимих книжок */
+  const src = d.slots.find(s => s.el === d.el);
+  d.w = src.r - src.l; d.h = src.b - src.t;
+  const g = d.el.cloneNode(true);
+  g.classList.add("drag-ghost"); g.classList.remove("landed");
+  g.style.width = d.w + "px"; g.style.height = d.h + "px";
+  /* спершу — точно на місці книжки, потім плавно «знімаємо з полиці» над палець */
+  g.style.transform = "translate(" + (src.l - sx) + "px," + (src.t - sy) + "px)";
+  document.body.appendChild(g);
+  d.ghost = g;
+  d.el.classList.add("drag-src");
+  const m = document.createElement("div");
+  m.className = "drop-mark off";
+  document.body.appendChild(m);
+  d.mark = m;
+  void g.offsetWidth;
+  g.classList.add("lifting");
+  positionGhost();
+  setTimeout(() => g.classList.remove("lifting"), 190);
+  d.raf = requestAnimationFrame(dragAutoScroll);
+}
+/* «привид» висить над пальцем — ряд, куди ставимо, лишається видно */
+function positionGhost(){
+  const d = drag; if(!d || !d.ghost) return;
+  d.ghost.style.transform = "translate(" + (d.cx - d.w / 2) + "px," + (d.cy - d.h - 18) + "px) rotate(3deg)";
+}
+/* куди впаде книжка: найближчий ряд по висоті, у ньому — найближча книжка по горизонталі */
+function findDrop(){
+  const d = drag, x = d.cx + window.scrollX, y = d.cy + window.scrollY;
+  if(!d.rows.length) return null;
+  let row = d.rows.find(r => y >= r.t - 26 && y <= r.b + 34);
+  if(!row) row = d.rows.slice().sort((a,b) => Math.abs((a.t+a.b)/2 - y) - Math.abs((b.t+b.b)/2 - y))[0];
+  let best = row.items[0], bd = Infinity;
+  row.items.forEach(s => { const dd = Math.abs((s.l + s.r) / 2 - x); if(dd < bd){ bd = dd; best = s; } });
+  if(best.el === d.el) return null;
+  const before = x < (best.l + best.r) / 2;
+  /* якщо порядок не зміниться — нікуди не падаємо */
+  const ord = d.order.filter(id => id !== d.b.id);
+  let at = ord.indexOf(best.id) + (before ? 0 : 1);
+  ord.splice(at, 0, d.b.id);
+  if(ord.join() === d.order.join()) return null;
+  return {slot:best, row, before};
+}
+function updateDrop(){
+  const d = drag; if(!d || !d.active) return;
+  const drop = findDrop();
+  const key = drop ? drop.slot.id + (drop.before ? "<" : ">") : "";
+  if(key === d.dropKey) { placeMark(drop); return; }
+  d.dropKey = key; d.drop = drop;
+  d.slots.forEach(s => s.el.classList.remove("nudge-l", "nudge-r"));
+  if(drop){
+    const i = drop.row.items.indexOf(drop.slot);
+    const left = drop.before ? drop.row.items[i-1] : drop.slot, right = drop.before ? drop.slot : drop.row.items[i+1];
+    if(left && left.el !== d.el) left.el.classList.add("nudge-l");
+    if(right && right.el !== d.el) right.el.classList.add("nudge-r");
+  }
+  placeMark(drop);
+}
+function placeMark(drop){
+  const m = drag && drag.mark; if(!m) return;
+  if(!drop){ m.classList.add("off"); return; }
+  const s = drop.slot, sx = window.scrollX, sy = window.scrollY;
+  const x = drop.before ? s.l - 5 : s.r + 5;
+  m.style.left = (x - 2 - sx) + "px";
+  m.style.top = (s.t - 4 - sy) + "px";
+  m.style.height = (s.b - s.t + 8) + "px";
+  m.classList.remove("off");
+}
+function dragAutoScroll(){
+  const d = drag; if(!d || !d.active) return;
+  const H = window.innerHeight, topZone = 90, botZone = H - 130;
+  let v = 0;
+  if(d.cy < topZone) v = -Math.min(18, Math.ceil((topZone - d.cy) / 5));
+  else if(d.cy > botZone) v = Math.min(18, Math.ceil((d.cy - botZone) / 5));
+  if(v){
+    const before = window.scrollY;
+    window.scrollBy(0, v);
+    if(window.scrollY !== before) updateDrop();
+  }
+  d.raf = requestAnimationFrame(dragAutoScroll);
+}
+function dragFinish(commit){
+  const d = drag;
+  const drop = d.drop;
+  dragCleanup();
+  dragEndedAt = Date.now();
+  if(!commit || !drop) return;
+  const arr = state.books;
+  const from = arr.findIndex(x => x.id === d.b.id);
+  if(from < 0) return;
+  const [bk] = arr.splice(from, 1);
+  let to = arr.findIndex(x => x.id === drop.slot.id);
+  if(to < 0){ arr.splice(from, 0, bk); return; }
+  if(!drop.before) to++;
+  arr.splice(to, 0, bk);
+  const firstDrag = !state.dragTipSeen;
+  state.dragTipSeen = true;
+  renderShelves(); renderHero(); scheduleSave();
+  const el = document.querySelector('#shelves .book[data-id="' + bk.id + '"]');
+  if(el){ el.classList.add("landed"); setTimeout(() => el.classList.remove("landed"), 600); }
+  if(firstDrag) toast("Готово — порядок збережено");
+}
+function dragCleanup(){
+  const d = drag; if(!d) return;
+  clearTimeout(d.timer);
+  cancelAnimationFrame(d.raf);
+  document.removeEventListener("pointermove", dragMove);
+  document.removeEventListener("pointerup", dragUp);
+  document.removeEventListener("pointercancel", dragCancel);
+  if(d.ghost) d.ghost.remove();
+  if(d.mark) d.mark.remove();
+  if(d.el) d.el.classList.remove("drag-src");
+  (d.slots || []).forEach(s => s.el.classList.remove("nudge-l", "nudge-r"));
+  document.body.classList.remove("dragging");
+  drag = null;
 }
 
 function allItems(){ return SHOP.concat(state.custom); }
@@ -1023,6 +1287,12 @@ function renderShelves(){
   const decor = state.placed.slice();
   const cap = perRow();
 
+  if(!state.dragTipSeen && books.length >= 2){
+    host.insertAdjacentHTML("beforeend", '<div class="drag-tip" id="dragTip">'
+      + '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12 10V4.5a1.5 1.5 0 0 1 3 0V11"/><path d="M15 10.5V7a1.5 1.5 0 0 1 3 0v6.5a7 7 0 0 1-7 7h-.6a6 6 0 0 1-4.6-2.2L3.6 15.4a1.6 1.6 0 0 1 2.3-2.2L9 15.5V9a1.5 1.5 0 0 1 3 0"/></svg>'
+      + '<span>Утримай книжку пальцем — і перетягни на інше місце.</span><button aria-label="Зрозуміло">×</button></div>');
+    host.querySelector("#dragTip button").onclick = () => { state.dragTipSeen = true; renderShelves(); scheduleSave(); };
+  }
   if(books.length===0 && decor.length===0){
     host.innerHTML = '<div class="shelf-row"><div class="empty-note">'
       + (filter==="all" ? "Полиця порожня. Додай першу книгу — вона стане сюди." : "У цьому розділі поки нічого немає.")
@@ -1158,6 +1428,42 @@ $("mascotNameInput").oninput = e => {
 $("mascotNameInput").onblur = () => renderHero();
 $("mascotToggle").onclick = ()=>{ state.mascotOn = !state.mascotOn; renderMascotSettings(); renderShelves(); scheduleSave(); };
 $("nightToggle").onclick = ()=>{ state.nightTheme = state.nightTheme === false; applyNight(); renderThemes(); renderHero(true); scheduleSave(); };
+/* ═══ МОЇ ЖАНРИ ═══ */
+function renderGenreSettings(){
+  const box = $("myGenres"); if(!box) return;
+  const list = state.customGenres;
+  $("myGenresN").textContent = list.length ? list.length + " " + plural(list.length,"жанр","жанри","жанрів") : "";
+  if(!list.length){ box.innerHTML = '<span class="small" style="color:var(--muted)">Поки жодного. Додай тут або у формі книги через «+ свій».</span>'; return; }
+  box.innerHTML = list.map((g,i) => {
+    const used = state.books.filter(b => bookTags(b).some(t => sameGenre(t, g))).length;
+    return '<span class="gchip" data-i="'+i+'" title="'+(used ? "у " + used + " " + plural(used,"книжці","книжках","книжках") : "")+'">'+esc(g)
+      + '<button data-del="'+i+'" aria-label="Прибрати жанр '+esc(g)+'">×</button></span>';
+  }).join("");
+  box.querySelectorAll("[data-del]").forEach(btn => btn.onclick = () => {
+    const chip = btn.parentNode, i = +btn.dataset.del;
+    if(!chip.classList.contains("sure")){
+      box.querySelectorAll(".gchip.sure").forEach(c => { c.classList.remove("sure"); c.querySelector("button").textContent = "×"; });
+      chip.classList.add("sure"); btn.textContent = "прибрати?";
+      return;
+    }
+    const g = state.customGenres[i];
+    state.customGenres.splice(i, 1);
+    renderGenreSettings(); scheduleSave();
+    toast("«" + g + "» більше не в списку. Книжки свій жанр зберегли");
+  });
+}
+function addGenreFromSettings(){
+  const inp = $("genreSetInp"), v = inp.value.trim();
+  if(!v){ inp.focus(); return; }
+  const before = state.customGenres.length;
+  const g = addCustomGenre(v);
+  inp.value = "";
+  if(state.customGenres.length > before) toast("Жанр «" + g + "» додано");
+  else toast("«" + g + "» вже є у списку");
+}
+$("genreSetAdd").onclick = addGenreFromSettings;
+$("genreSetInp").onkeydown = e => { if(e.key === "Enter"){ e.preventDefault(); addGenreFromSettings(); } };
+
 $("gbKey").oninput = e => { state.gbKey = e.target.value.trim(); scheduleSave(); };
 $("gbKey").onblur = () => renderMascotSettings();
 
@@ -1206,7 +1512,7 @@ const fmt1 = n => (Math.round(n*10)/10).toString().replace(".", ",");
 function genreColorMap(){
   /* колір закріплений за жанром за всі роки — перемикання року не перефарбовує жанри */
   const cnt = {};
-  state.books.filter(b=>b.status==="read" && b.tag).forEach(b => cnt[b.tag] = (cnt[b.tag]||0) + 1);
+  state.books.filter(b=>b.status==="read").forEach(b => bookTags(b).forEach(g => cnt[g] = (cnt[g]||0) + 1));
   const ranked = Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a] || a.localeCompare(b));
   const pal = isDark() ? GENRE_COLORS.dark : GENRE_COLORS.light;
   const map = {};
@@ -1253,11 +1559,13 @@ function ratingsChart(dist){
   return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Скільки книг отримало кожну оцінку">'+g+'</svg>';
 }
 
-function donutChart(parts, total){
+/* total — скільки книжок (у центрі), marks — сума жанрових позначок (ділить коло; більша за total, якщо в книжок кілька жанрів) */
+function donutChart(parts, total, marks){
   const R = 60, C = 2*Math.PI*R, gap = parts.length > 1 ? 2.5 : 0;
+  const whole = marks || total;
   let off = 0, segs = "";
   parts.forEach((p,i) => {
-    const len = C * p.count / total;
+    const len = C * p.count / whole;
     const dash = Math.max(0.5, len - gap);
     segs += '<circle class="seg'+(statsSel.genre===p.name?" sel":"")+'" data-g="'+esc(p.name)+'" cx="74" cy="74" r="'+R+'" fill="none" stroke="'+p.color+'" stroke-width="22"'
       + ' stroke-dasharray="'+dash.toFixed(2)+' '+(C-dash).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 74 74)"/>';
@@ -1321,7 +1629,10 @@ function renderStats(){
 
   if(!books.length){
     body.innerHTML = h + '<section class="card stat-empty"><div id="statOwl" style="display:flex;justify-content:center"></div>'
-      + '<p>'+(statsYear === "all" ? "Ще жодної прочитаної книжки. Перша — найважливіша!" : "У " + statsYear + " ще нічого не прочитано. Почнемо?")+'</p></section>';
+      + '<p>'+(statsYear === "all" ? "Ще жодної прочитаної книжки. Перша — найважливіша!" : readAll.length ? "У " + statsYear + " поки жодної книжки з датою." : "У " + statsYear + " ще нічого не прочитано. Почнемо?")+'</p>'
+      + (statsYear !== "all" && readAll.length ? '<button class="btn soft sm" id="toAllYears">Усі роки · ' + readAll.length + ' ' + plural(readAll.length,"книга","книги","книг") + '</button>' : '')
+      + '</section>';
+    if($("toAllYears")) $("toAllYears").onclick = () => { statsYear = "all"; statsSel = {month:null, genre:null}; renderStats(); };
     $("statOwl").appendChild(owlEl({h:110, mood:"sleep"}));
     if($("goalEdit")) $("goalEdit").onclick = openGoal;
     return;
@@ -1338,34 +1649,48 @@ function renderStats(){
     + '<div class="tile"><div class="mono">Днів на книгу</div><div class="v">'+(durs.length ? Math.round(avg(durs)) : '—')+'</div><div class="h">'+(durs.length ? "у середньому" : "вкажи, коли почала")+'</div></div>'
     + '<div class="tile"><div class="mono">Авторів</div><div class="v">'+Object.keys(authors).length+'</div><div class="h">різних</div></div>'
     + '</div>';
+  const undatedAll = readAll.filter(b => !readYear(b)).length;
+  if(statsYear !== "all" && undatedAll){
+    h += '<div class="chart-note tiles-note">Ще ' + undatedAll + ' ' + plural(undatedAll,"книжка","книжки","книжок") + ' без дати — їх видно в «Усі роки».</div>';
+  }
 
   /* — по місяцях — */
   if(statsYear !== "all"){
     const counts = Array(12).fill(0), titles = Array.from({length:12}, ()=>[]);
-    books.forEach(b => { const m = new Date(b.readAt).getMonth(); counts[m]++; titles[m].push(b.title); });
+    const dated = books.filter(b => b.readAt), yearOnly = books.length - dated.length;
+    dated.forEach(b => { const m = new Date(b.readAt).getMonth(); counts[m]++; titles[m].push(b.title); });
     const cm = statsYear === curY ? new Date().getMonth() : -1;
     const mx = Math.max(...counts), bestM = counts.map((c,i)=>c===mx?i:-1).filter(i=>i>=0);
-    const bestTxt = bestM.length === 1
+    const bestTxt = !mx ? "" : bestM.length === 1
       ? "Найчитабельніший місяць — " + MONTHS_FULL[bestM[0]].toLowerCase() + " (" + mx + ")."
       : "Найбільше — по " + mx + " на місяць: " + bestM.slice(0,3).map(i=>MONTHS_FULL[i].toLowerCase()).join(", ") + (bestM.length > 3 ? "…" : ".");
+    const yoTxt = yearOnly ? " Ще " + yearOnly + " " + plural(yearOnly,"книжка","книжки","книжок") + " — лише з роком, без місяця." : "";
     const note = statsSel.month !== null
       ? (counts[statsSel.month] ? MONTHS_FULL[statsSel.month] + ": " + titles[statsSel.month].map(t=>"«"+esc(t)+"»").join(", ") : MONTHS_FULL[statsSel.month] + ": нічого")
-      : bestTxt + " Торкнись стовпчика, щоб побачити книжки.";
-    h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">По місяцях</h3></div><div id="monthsBox">'+monthsChart(counts, cm)+'</div>'
-      + '<div class="chart-note" id="monthNote">'+note+'</div></section>';
+      : (mx ? bestTxt + yoTxt + " Торкнись стовпчика, щоб побачити книжки." : "Цього року всі книжки — без точних дат, тож по місяцях розкласти нічого.");
+    if(dated.length || yearOnly){
+      h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">По місяцях</h3></div><div id="monthsBox">'+monthsChart(counts, cm)+'</div>'
+        + '<div class="chart-note" id="monthNote">'+note+'</div></section>';
+    }
   } else {
     const byY = {};
     readAll.forEach(b => { const y = readYear(b); if(y) byY[y] = (byY[y]||0) + 1; });
     const ys = Object.keys(byY).sort();
-    if(ys.length > 1){
+    const undated = readAll.length - readAll.filter(b => readYear(b)).length;
+    if(ys.length > 1 || (ys.length && undated)){
+      const mxY = Math.max(...Object.values(byY), undated);
       h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">По роках</h3></div>'
-        + ys.map(y => '<div class="meter"><span>'+y+'</span><span class="tr"><i style="width:'+(byY[y]/Math.max(...Object.values(byY))*100)+'%"></i></span><b>'+byY[y]+'</b></div>').join("") + '</section>';
+        + ys.map(y => '<div class="meter"><span>'+y+'</span><span class="tr"><i style="width:'+(byY[y]/mxY*100)+'%"></i></span><b>'+byY[y]+'</b></div>').join("")
+        + (undated ? '<div class="meter undated"><span>без дати</span><span class="tr"><i style="width:'+(undated/mxY*100)+'%"></i></span><b>'+undated+'</b></div>' : '')
+        + '</section>';
     }
   }
 
   /* — жанри — */
   const gcount = {};
-  books.forEach(b => { const g = b.tag || "Без жанру"; gcount[g] = (gcount[g]||0) + 1; });
+  books.forEach(b => { const tg = bookTags(b); (tg.length ? tg : ["Без жанру"]).forEach(g => gcount[g] = (gcount[g]||0) + 1); });
+  const multi = books.some(b => bookTags(b).length > 1);
+  const marks = Object.values(gcount).reduce((a,n)=>a+n,0);
   const cmap = genreColorMap();
   const named = Object.keys(gcount).filter(g => cmap[g]).sort((a,b)=>gcount[b]-gcount[a]);
   const rest = Object.keys(gcount).filter(g => !cmap[g]);
@@ -1373,10 +1698,11 @@ function renderStats(){
   const restN = rest.reduce((a,g)=>a+gcount[g],0);
   if(restN) parts.push({name: rest.length === 1 ? rest[0] : "Інше", count:restN, color: isDark() ? GENRE_COLORS.otherDark : GENRE_COLORS.otherLight, others:rest});
   h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">Жанри</h3><span class="mono">'+Object.keys(gcount).length+' '+plural(Object.keys(gcount).length,"жанр","жанри","жанрів")+'</span></div>'
-    + '<div class="donut-wrap"><div id="donutBox">'+donutChart(parts, books.length)+'</div><div class="legend">'
-    + parts.map(p => '<div class="lg'+(statsSel.genre===p.name?" sel":"")+'" data-g="'+esc(p.name)+'"><i style="background:'+p.color+'"></i><span>'+esc(p.name)+'</span><b>'+p.count+' · '+Math.round(p.count/books.length*100)+'%</b></div>').join("")
+    + '<div class="donut-wrap"><div id="donutBox">'+donutChart(parts, books.length, marks)+'</div><div class="legend">'
+    + parts.map(p => '<div class="lg'+(statsSel.genre===p.name?" sel":"")+'" data-g="'+esc(p.name)+'"><i style="background:'+p.color+'"></i><span>'+esc(p.name)+'</span><b>'+p.count+(multi ? '' : ' · '+Math.round(p.count/books.length*100)+'%')+'</b></div>').join("")
     + '</div></div>'
     + (parts.some(p=>p.others && p.others.length > 1) ? '<div class="chart-note">Інше: '+esc(parts.find(p=>p.others).others.join(", "))+'</div>' : '')
+    + (multi ? '<div class="chart-note">Книжка з кількома жанрами рахується в кожному з них.</div>' : '')
     + (gcount["Без жанру"] ? '<div class="chart-note">Жанр можна додати в картці книги → «Редагувати».</div>' : '')
     + '</section>';
 
@@ -1384,7 +1710,7 @@ function renderStats(){
   if(rated.length){
     const dist = Array(10).fill(0);
     rated.forEach(b => dist[b.rating - 1]++);
-    const top = rated.slice().sort((a,b)=>b.rating-a.rating || (b.readAt||"").localeCompare(a.readAt||"")).slice(0,3);
+    const top = rated.slice().sort((a,b)=>b.rating-a.rating || String(b.readAt||b.readYearOnly||"").localeCompare(String(a.readAt||a.readYearOnly||""))).slice(0,3);
     h += '<section class="card"><div class="card-hd"><h3 class="card-ttl">Оцінки</h3><span class="mono">★ '+fmt1(avg(rated.map(b=>b.rating)))+'</span></div>'
       + ratingsChart(dist)
       + '<div class="mono" style="margin-top:14px">Найкращі</div><div class="toplist">'
@@ -1418,7 +1744,7 @@ function renderStats(){
     facts.push(["НАЙШВИДШЕ", "«" + fast.b.title + "» · " + fast.d + " дн."]);
     if(withDur.length > 1 && slow.b !== fast.b) facts.push(["НАЙДОВШЕ", "«" + slow.b.title + "» · " + slow.d + " дн."]);
   }
-  const last = books.slice().sort((a,b)=>(b.readAt||"").localeCompare(a.readAt||""))[0];
+  const last = books.filter(b => b.readAt).sort((a,b)=>b.readAt.localeCompare(a.readAt))[0];
   if(last) facts.push(["ОСТАННЯ", "«" + last.title + "»"]);
   if(facts.length){
     h += '<section class="card facts"><div class="card-hd"><h3 class="card-ttl">Цікаве</h3></div>'
@@ -1710,15 +2036,20 @@ function openBookForm(existing){
     + '<label class="lbl mono" for="fTitle">Назва</label><input class="inp" id="fTitle" placeholder="Назва книги" value="'+esc(b.title)+'" />'
     + '<label class="lbl mono" for="fAuthor">Автор</label><input class="inp" id="fAuthor" placeholder="Автор" value="'+esc(b.author||"")+'" />'
     + '<div id="datesBox"></div>'
-    + '<label class="lbl mono">Жанр</label><div class="chips" id="genreChips"></div>'
+    + '<label class="lbl mono">Жанр <span class="lbl-hint">· можна кілька</span></label><div class="chips" id="genreChips"></div>'
     + '<label class="lbl mono" for="fNote">Враження</label><textarea class="inp" id="fNote" rows="3" placeholder="Кілька слів для себе">'+esc(b.note||"")+'</textarea>'
     + '<label class="lbl mono">Обкладинка</label><div class="preview contain hidden" id="fCoverPreview" style="height:130px"></div>'
     + '<label class="filebtn" for="fCover">'+UPICON+'Своє фото обкладинки<span class="fname" id="fCoverName"></span></label><input type="file" accept="image/*" id="fCover" />'
     + '<button class="btn wide" id="fSave" style="margin-top:16px">'+(existing?"Зберегти":"Поставити на полицю")+'</button>'
   );
-  let status = b.status, cover = b.cover, coverUrl = b.coverUrl, genre = b.tag || "";
-  const today = ymd(new Date().toISOString());
-  let started = b.startedAt ? ymd(b.startedAt) : today, finished = b.readAt ? ymd(b.readAt) : today;
+  let status = b.status, cover = b.cover, coverUrl = b.coverUrl, genres = bookTags(b).slice();
+  const today = ymd(new Date().toISOString()), yNow = new Date().getFullYear();
+  let started = b.startedAt ? ymd(b.startedAt) : "", finished = b.readAt ? ymd(b.readAt) : today;
+  let year = +b.readYearOnly || (b.readAt ? new Date(b.readAt).getFullYear() : yNow);
+  /* режим дат: «dates» — знаю дати, «year» — лише рік, «none» — не памʼятаю */
+  let readMode = existing && b.status === "read" ? (b.readAt ? "dates" : b.readYearOnly ? "year" : "none")
+    : existing && b.status === "reading" ? "dates" : state.dateMode;
+  let startMode = existing && b.status === "reading" && !b.startedAt ? "none" : "dates";
   function showCover(src){
     const p = $("fCoverPreview");
     if(src){ p.style.backgroundImage = "url("+src+")"; p.classList.remove("hidden"); } else p.classList.add("hidden");
@@ -1727,26 +2058,67 @@ function openBookForm(existing){
   function renderDates(){
     const box = $("datesBox");
     if(status === "planned"){ box.innerHTML = ""; return; }
-    box.innerHTML = '<div class="dates">'
-      + '<div><label class="lbl mono" for="fStart">Почала</label><input class="inp" type="date" id="fStart" max="'+today+'" value="'+(started||"")+'" /></div>'
-      + (status === "read" ? '<div><label class="lbl mono" for="fEnd">Дочитала</label><input class="inp" type="date" id="fEnd" max="'+today+'" value="'+finished+'" /></div>' : '<div></div>')
-      + '</div>';
-    $("fStart").onchange = e => { started = e.target.value; };
+    const isRead = status === "read", mode = isRead ? readMode : startMode;
+    const modes = isRead ? [["dates","Знаю дати"],["year","Лише рік"],["none","Не памʼятаю"]] : [["dates","Знаю дату"],["none","Не памʼятаю"]];
+    let h = '<label class="lbl mono">'+(isRead ? "Коли читала" : "Коли почала")+'</label>'
+      + '<div class="seg seg-sm" id="segDate">' + modes.map(([k,v]) => '<button data-m="'+k+'" class="'+(mode===k?"on":"")+'">'+v+'</button>').join("") + '</div>';
+    if(mode === "dates" && isRead){
+      h += '<div class="dates" style="margin-top:4px">'
+        + '<div><div class="lbl-row"><label class="lbl mono" for="fStart">Почала</label>'+(started ? '<button class="lbl-x" id="fStartClear">прибрати</button>' : '')+'</div>'
+        + '<input class="inp'+(started ? '' : ' empty')+'" type="date" id="fStart" max="'+today+'" value="'+started+'" /></div>'
+        + '<div><div class="lbl-row"><label class="lbl mono" for="fEnd">Дочитала</label></div><input class="inp" type="date" id="fEnd" max="'+today+'" value="'+finished+'" /></div>'
+        + '</div><div class="small date-hint">Початок можна не вказувати.</div>';
+    } else if(mode === "dates"){
+      h += '<div class="dates" style="margin-top:4px"><div><label class="lbl mono" for="fStart">Почала</label><input class="inp" type="date" id="fStart" max="'+today+'" value="'+(started || today)+'" /></div><div></div></div>';
+    } else if(mode === "year"){
+      let opts = "";
+      for(let y = yNow; y >= yNow - 70; y--) opts += '<option value="'+y+'"'+(y===year?" selected":"")+'>'+y+'</option>';
+      h += '<label class="lbl mono" for="fYear">Рік</label><div class="year-pick">'
+        + '<button class="yp-btn" data-dy="-1" aria-label="Раніше">‹</button><select class="inp" id="fYear">'+opts+'</select>'
+        + '<button class="yp-btn" data-dy="1" aria-label="Пізніше">›</button></div>';
+    } else {
+      h += '<div class="small date-hint">' + (isRead
+        ? "Нічого страшного — книжка стане на полицю й рахуватиметься в статистиці «Усі роки»."
+        : "Добре, без дати. Просто читаємо.") + '</div>';
+    }
+    box.innerHTML = h;
+    box.querySelectorAll("#segDate [data-m]").forEach(btn => btn.onclick = () => {
+      if(isRead) readMode = btn.dataset.m; else startMode = btn.dataset.m;
+      renderDates();
+    });
+    if($("fStart")) $("fStart").onchange = e => { started = e.target.value; if(isRead) renderDates(); };
+    if($("fStartClear")) $("fStartClear").onclick = () => { started = ""; renderDates(); };
     if($("fEnd")) $("fEnd").onchange = e => { finished = e.target.value; };
+    if($("fYear")) $("fYear").onchange = e => { year = +e.target.value; };
+    box.querySelectorAll("[data-dy]").forEach(btn => btn.onclick = () => {
+      year = Math.min(yNow, Math.max(yNow - 70, year + +btn.dataset.dy));
+      $("fYear").value = year;
+    });
   }
+  /* жанри: можна кілька; свій жанр одразу потрапляє в постійний список */
   function renderGenres(){
-    const used = state.books.map(x=>x.tag).filter(t => t && !GENRES.includes(t));
-    const list = GENRES.concat([...new Set(used)]);
-    if(genre && !list.includes(genre)) list.push(genre);
-    $("genreChips").innerHTML = list.map(g => '<button class="chip'+(g===genre?" on":"")+'" data-g="'+esc(g)+'">'+esc(g)+'</button>').join("")
+    const list = GENRES.concat(state.customGenres);
+    genres.forEach(g => { if(!list.some(x => sameGenre(x, g))) list.push(g); });
+    const isOn = g => genres.some(x => sameGenre(x, g));
+    $("genreChips").innerHTML = list.map(g => '<button class="chip'+(isOn(g)?" on":"")+'" data-g="'+esc(g)+'">'+esc(g)+'</button>').join("")
       + '<button class="chip add" id="genreAdd">+ свій</button>';
-    $("genreChips").querySelectorAll("[data-g]").forEach(c => c.onclick = () => { genre = genre === c.dataset.g ? "" : c.dataset.g; renderGenres(); });
+    $("genreChips").querySelectorAll("[data-g]").forEach(c => c.onclick = () => {
+      const g = c.dataset.g;
+      genres = isOn(g) ? genres.filter(x => !sameGenre(x, g)) : genres.concat(g);
+      c.classList.toggle("on", isOn(g));
+    });
     $("genreAdd").onclick = () => {
       const box = $("genreChips");
-      box.insertAdjacentHTML("beforeend", '<input class="inp" id="genreNew" placeholder="Назва жанру" style="height:40px;margin-top:4px" />');
+      box.insertAdjacentHTML("beforeend", '<input class="inp" id="genreNew" placeholder="Назва жанру" maxlength="32" enterkeyhint="done" style="height:40px;margin-top:4px" />');
       $("genreAdd").remove();
       const inp = $("genreNew"); inp.focus();
-      const done = () => { const v = inp.value.trim(); if(v) genre = v.charAt(0).toUpperCase() + v.slice(1); renderGenres(); };
+      let doneOnce = false;
+      const done = () => {
+        if(doneOnce) return; doneOnce = true;
+        const g = addCustomGenre(inp.value);
+        if(g && !genres.some(x => sameGenre(x, g))) genres.push(g);
+        renderGenres();
+      };
       inp.onkeydown = e => { if(e.key === "Enter"){ e.preventDefault(); done(); } };
       inp.onblur = done;
     };
@@ -1761,7 +2133,7 @@ function openBookForm(existing){
     wireSearch(async picked=>{
       $("fTitle").value = picked.title;
       $("fAuthor").value = picked.author || "";
-      if(picked.genre && !genre){ genre = picked.genre; renderGenres(); }
+      if(picked.genre && !genres.length){ genres = [picked.genre]; renderGenres(); }
       cover = null; coverUrl = null;
       if(picked.cover){
         showCover(picked.cover); coverUrl = picked.cover;
@@ -1777,25 +2149,46 @@ function openBookForm(existing){
     document.querySelector('label[for="fCover"]').classList.add("filled");
     cover = await shrinkImage(f, 300, 440, .8); coverUrl = null; showCover(cover);
   };
+  function applyFormDates(t){
+    const clear = (...ks) => ks.forEach(k => delete t[k]);
+    if(status === "planned"){ clear("readAt", "readYearOnly", "dateRead", "startedAt"); return; }
+    if(status === "reading"){
+      clear("readAt", "readYearOnly", "dateRead");
+      if(startMode === "dates") t.startedAt = fromYmd(started || today); else clear("startedAt");
+      return;
+    }
+    /* прочитано */
+    state.dateMode = readMode;
+    if(readMode === "dates"){
+      t.readAt = fromYmd(finished || today);
+      t.dateRead = longDate(t.readAt) + " " + new Date(t.readAt).getFullYear();
+      clear("readYearOnly");
+      if(started){ t.startedAt = fromYmd(started); if(t.startedAt > t.readAt) t.startedAt = t.readAt; }
+      else clear("startedAt");
+    } else if(readMode === "year"){
+      clear("readAt", "dateRead", "startedAt");
+      t.readYearOnly = year;
+    } else {
+      clear("readAt", "dateRead", "startedAt", "readYearOnly");
+    }
+  }
   $("fSave").onclick = () => {
     const title = $("fTitle").value.trim();
     if(!title){ $("fTitle").focus(); toast("Напиши назву книги"); return; }
-    const data = {title, author: $("fAuthor").value.trim(), tag: genre, note: $("fNote").value.trim(), status, cover, coverUrl};
+    const data = {title, author: $("fAuthor").value.trim(), tags: genres.slice(), tag: genres[0] || "", note: $("fNote").value.trim(), status, cover, coverUrl};
     let earned = false, target;
     if(existing){
       const idx = state.books.findIndex(x=>x.id===existing.id);
       const wasRead = state.books[idx].status === "read";
       state.books[idx] = Object.assign(state.books[idx], data);
       target = state.books[idx];
-      if(!wasRead && status==="read"){ markRead(target, fromYmd(finished)); earned = true; }
+      if(!wasRead && status==="read") earned = true;
     } else {
-      target = Object.assign({id:uid("b")}, data);
-      if(status==="read"){ markRead(target, fromYmd(finished)); earned = true; }
+      target = Object.assign({id:uid("b"), no:nextBookNo()}, data);
+      if(status==="read") earned = true;
       state.books.push(target);
     }
-    if(status !== "planned") target.startedAt = fromYmd(started) || target.startedAt || new Date().toISOString();
-    if(status === "read" && finished){ target.readAt = fromYmd(finished); target.dateRead = longDate(target.readAt) + " " + new Date(target.readAt).getFullYear(); }
-    if(status === "read" && target.startedAt && target.readAt && target.startedAt > target.readAt) target.startedAt = target.readAt;
+    applyFormDates(target);
     closeModal();
     if(earned) celebrate(target);
     renderAll(); scheduleSave();
@@ -1852,7 +2245,7 @@ function openRating(book, celebrateIt){
       ? '<div id="celebOwl" style="display:flex;justify-content:center"></div>'
         + '<div style="text-align:center"><h3 style="margin-top:6px">'+(justLeveled ? "Новий рівень!" : esc(book.title))+'</h3>'
         + '<p class="sub">'+(justLeveled ? "Тепер ти — " + LEVELS[lvl] + "." : esc(state.mascotName) + " ставить штамп у формуляр.")+'</p>'
-        + '<div style="margin:14px 0 2px"><span class="stamp big thump">ПРОЧИТАНО<small>'+dotDate(book.readAt || new Date().toISOString())+'</small></span></div>'
+        + '<div style="margin:14px 0 2px"><span class="stamp big thump">ПРОЧИТАНО'+(readWhen(book) ? '<small>'+readWhen(book)+'</small>' : '')+'</span></div>'
         + '<div class="big-coin">+'+COINS_PER_BOOK+' ◈</div><p class="sub">монет у гаманець</p></div>'
         + '<div class="divider" style="margin-top:18px"><span class="mono">Оціни книгу</span></div>'
       : head("Оцінка", esc(book.title)))
@@ -1907,8 +2300,9 @@ function celebrate(book){
 function openDetail(id){
   const b = state.books.find(x=>x.id===id); if(!b) return;
   const c = coverColor(b), cov = bookCover(b);
-  const no = String(state.books.indexOf(b) + 1).padStart(4, "0");
-  const when = b.readAt ? dotDate(b.readAt) : (b.dateRead || "");
+  const no = String(b.no || state.books.indexOf(b) + 1).padStart(4, "0");
+  const when = readWhen(b);
+  const tags = bookTags(b);
   const fld = (k, v) => v ? '<div class="fld"><span>'+k+'</span><i></i><b>'+esc(v)+'</b></div>' : "";
   const startedTxt = b.startedAt ? dotDate(b.startedAt) : "";
   const daysTxt = (b.status === "read" && b.startedAt && b.readAt) ? (Math.max(1, dayDiff(b.startedAt, b.readAt) + 1)) + " дн." : "";
@@ -1920,8 +2314,9 @@ function openDetail(id){
     + '</div><div style="flex:1;min-width:0">'
     + '<h3 class="cat-title">'+esc(b.title)+'</h3>'
     + (b.author ? '<div class="cat-author">'+esc(b.author)+'</div>' : '')
-    + '<div class="fields">' + fld("ЖАНР", b.tag ? b.tag.toLowerCase() : "") + fld("СТАТУС", STATUSES[b.status].toLowerCase()) + fld("ПОЧАЛА", startedTxt) + (b.status==="read" ? fld("ДОЧИТАЛА", when) + fld("ЧИТАЛА", daysTxt) : "") + '</div>'
-    + (b.status === "read" ? '<div class="cat-stamp"><span class="stamp">ПРОЧИТАНО<small>'+esc(when)+'</small></span></div>' : '')
+    + '<div class="fields">' + fld(tags.length > 1 ? "ЖАНРИ" : "ЖАНР", tags.join(", ").toLowerCase()) + fld("СТАТУС", STATUSES[b.status].toLowerCase()) + fld("ПОЧАЛА", startedTxt)
+    + (b.status==="read" ? fld(b.readAt ? "ДОЧИТАЛА" : "РІК", when) + fld("ЧИТАЛА", daysTxt) : "") + '</div>'
+    + (b.status === "read" ? '<div class="cat-stamp"><span class="stamp">ПРОЧИТАНО'+(when ? '<small>'+esc(when)+'</small>' : '')+'</span></div>' : '')
     + '</div>'
     + '</div>'
     + '<div class="hand-note">'+(b.note ? esc(b.note) : '<span style="color:var(--muted)">Тут будуть твої враження…</span>')+'</div>'
@@ -2048,7 +2443,7 @@ $("importFile").onchange = e => {
     openSheet(head("Відновити з копії?", "У копії: " + data.books.length + " " + plural(data.books.length,"книга","книги","книг") + ", " + (data.coins||0) + " монет. Поточна бібліотека буде замінена.")
       + '<div class="row" style="margin-top:8px"><button class="btn ghost" id="impNo">Скасувати</button><button class="btn" id="impYes">Відновити</button></div>');
     $("impYes").onclick = ()=>{
-      state = Object.assign({books:[],coins:0,owned:[],placed:[],custom:[],theme:"lamp",bgImg:null,plankImg:null,mascotName:DEFAULT_NAME,mascotOn:false,nightTheme:true,gbKey:"",goals:{},v5:true}, upgrade(data));
+      state = Object.assign({books:[],coins:0,owned:[],placed:[],custom:[],theme:"lamp",bgImg:null,plankImg:null,mascotName:DEFAULT_NAME,mascotOn:false,nightTheme:true,gbKey:"",goals:{},v5:true,dateMode:"dates",dragTipSeen:false}, upgrade(data));
       normalizeState(); closeModal(); applyTheme(); applyNight(); renderAll(); syncUploadUI(); scheduleSave();
       setPage("shelf"); toast("Бібліотеку відновлено");
     };
