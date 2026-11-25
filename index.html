@@ -189,8 +189,12 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .book.has-cover .bk-title,.book.has-cover .bk-author{display:none}
 .bk-flag{position:absolute;top:-2px;right:8px;width:12px;height:24px;background:var(--stamp);clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%);box-shadow:0 2px 3px rgba(0,0,0,.3)}
 .bk-flag.reading{background:var(--brass);height:30px}
-.decor{width:74px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;pointer-events:none}
-.decor svg,.decor img{filter:drop-shadow(2px 4px 5px var(--bshadow))}
+.decor{width:74px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;position:relative;z-index:1}
+.decor svg,.decor img{filter:drop-shadow(1px 3px 3px var(--bshadow))}
+/* предмет стоїть трохи «вглиб» дошки, а під ним — тінь дотику: так видно, що він спирається на полицю */
+.decor-in{position:relative;display:flex;align-items:flex-end;justify-content:center}
+.decor-sh{position:absolute;left:12%;right:10%;height:9px;bottom:-5px;border-radius:50%;z-index:-1;
+  background:radial-gradient(closest-side,rgba(20,10,4,.55),rgba(20,10,4,.25) 60%,rgba(20,10,4,0))}
 .shelf-owl{width:86px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;cursor:pointer}
 .empty-note{color:var(--ink2);font-size:14px;font-weight:600;padding:34px 12px;text-align:center;width:100%}
 
@@ -803,7 +807,7 @@ const ART = {
 };
 const SHOP = [
   {id:"plant",name:"Рослина",price:30},{id:"tea",name:"Чашка чаю",price:30},
-  {id:"candle-slow",name:"Свічка «Slow days»",price:30,src:"item-candle-slowdays.png",w:92,sink:6},  /* sink: на скільки % опустити, щоб на дошку стала підставка, а стрічка звисала через край */
+  {id:"candle-slow",name:"Свічка «Slow days»",price:30,src:"item-candle-slowdays.png",w:92,base:.956},  /* base: низ деревʼяної підставки (під нею ще звисає стрічка) */
   {id:"candle",name:"Свічка",price:45},{id:"stack",name:"Стосик книг",price:45},
   {id:"lamp",name:"Лампа",price:60},{id:"frame",name:"Фоторамка",price:60},
   {id:"crystal",name:"Кристал",price:75},{id:"clock",name:"Годинник",price:75},
@@ -1393,7 +1397,12 @@ function renderShelves(){
       const d = document.createElement("div");
       d.className = "decor";
       if(item.w) d.style.width = item.w + "px";
-      d.innerHTML = itemPic(item) ? '<img src="'+itemPic(item)+'" alt="" style="max-width:'+(item.w||74)+'px;max-height:112px;object-fit:contain'+(item.sink ? ';transform:translateY('+item.sink+'%)' : '')+'">' : (ART[item.id] || "");
+      /* base — де в картинці лінія, якою предмет стоїть (частка висоти; 1 — самий низ). Опускаємо так,
+         щоб ця лінія була на 4px нижче верхнього краю дошки, і кладемо під неї тінь дотику */
+      const lift = item.base ? (1 - item.base) * 100 : 0;
+      d.innerHTML = '<div class="decor-in" style="transform:translateY(calc('+lift.toFixed(1)+'% + 4px))">'
+        + (itemPic(item) ? '<img src="'+itemPic(item)+'" alt="" style="max-width:'+(item.w||74)+'px;max-height:112px;object-fit:contain">' : (ART[item.id] || ""))
+        + '<i class="decor-sh" style="bottom:calc('+lift.toFixed(1)+'% - 5px)"></i></div>';
       row.appendChild(d);
     });
     const plank = document.createElement("div");
