@@ -1,9 +1,9 @@
 /* Службовий скрипт: дає застосунку працювати без інтернету.
    Змінюй CACHE_VERSION, коли оновлюєш файли — тоді телефон підхопить нову версію. */
 
-const CACHE_VERSION = "biblioteka-v6";
+const CACHE_VERSION = "biblioteka-v7";
 const COVER_CACHE = "biblioteka-covers-v1";
-const COVER_HOSTS = ["covers.openlibrary.org", "books.google.com", "books.googleusercontent.com", "upload.wikimedia.org"];
+const COVER_HOSTS = ["covers.openlibrary.org", "books.google.com", "books.googleusercontent.com", "upload.wikimedia.org", "static.yakaboo.ua"];
 const CORE = [
   "./",
   "./index.html",
@@ -63,7 +63,7 @@ self.addEventListener("fetch", event => {
   }
 
   // Пошук у базі книжок завжди йде в мережу, не з кешу
-  if (["www.googleapis.com", "openlibrary.org", "uk.wikipedia.org", "www.wikidata.org"].includes(url.hostname)) return;
+  if (["www.googleapis.com", "openlibrary.org", "uk.wikipedia.org", "www.wikidata.org", "api2.yakaboo.ua"].includes(url.hostname)) return;
 
   // Шрифти: спершу з кешу, у фоні оновлюємо
   if (isFont) {

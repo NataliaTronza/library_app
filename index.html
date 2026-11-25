@@ -559,7 +559,7 @@ input[type=date].inp{font-family:var(--mono);font-size:14px;padding:0 10px}
 
     <section class="card">
       <div class="card-hd"><h3 class="card-ttl">Пошук книжок</h3></div>
-      <div class="small">Шукаю у Вікіпедії та Open Library — без жодних ключів. Google Books знає більше видань, але без власного ключа він зараз відмовляє всім.</div>
+      <div class="small">Шукаю в каталозі Yakaboo (там є свіжі українські переклади з рідними обкладинками), у Вікіпедії та Open Library — без жодних ключів. Google Books можна додати власним ключем.</div>
       <label class="lbl mono" for="gbKey">Ключ Google Books (необовʼязково)</label>
       <input class="inp" id="gbKey" placeholder="AIza…" autocomplete="off" spellcheck="false" />
       <div class="small" style="margin-top:8px" id="gbKeyState"></div>
@@ -1148,7 +1148,7 @@ function renderMascotSettings(){
   $("mascotToggle").classList.toggle("on", state.mascotOn);
   const k = $("gbKey");
   if(document.activeElement !== k) k.value = state.gbKey || "";
-  $("gbKeyState").textContent = state.gbKey ? "Ключ збережено — пошук питає й Google Books." : "Без ключа все одно працює: Вікіпедія + Open Library.";
+  $("gbKeyState").textContent = state.gbKey ? "Ключ збережено — пошук питає й Google Books." : "Без ключа все одно працює: Yakaboo, Вікіпедія й Open Library.";
 }
 $("mascotNameInput").oninput = e => {
   state.mascotName = e.target.value.trim() || DEFAULT_NAME;
@@ -1518,6 +1518,54 @@ function fetchJSON(url, ms){
   const t = ctl ? setTimeout(()=>ctl.abort(), ms || 9000) : null;
   return fetch(url, ctl ? {signal:ctl.signal} : {}).then(r => { if(t) clearTimeout(t); if(!r.ok){ const e = new Error("HTTP " + r.status); e.status = r.status; throw e; } return r.json(); });
 }
+/* Yakaboo: каталог української книгарні — тут є свіжі переклади з рідними обкладинками */
+const YB_API = "https://api2.yakaboo.ua/api/catalog/vue_storefront_catalog_2/product/_search?from=0&size=24&sort=&_source_include=name,image,book_year,book_publication_label,author_label,category";
+const YB_IMG = "https://static.yakaboo.ua/media/cloudflare/product/webp/352x340";
+/* категорії Yakaboo → наші жанри; порядок важливий: конкретний жанр перемагає загальний */
+const YB_GENRES = [
+  [/любовн|романтичн/, "Любовний роман"], [/трилер|саспенс/, "Трилер"], [/детектив/, "Детектив"], [/горор|жахи/, "Жахи"],
+  [/фентезі/, "Фентезі"], [/фантастик/, "Фантастика"], [/історичн(ий|і) роман|історична проза/, "Історичний роман"],
+  [/біограф|мемуар/, "Біографія"], [/поезі|вірш/, "Поезія"], [/комікс|манга/, "Комікс"], [/психолог/, "Психологія"],
+  [/саморозвит|мотивац|особистісн/, "Саморозвиток"], [/нон-фікшн|науково-популяр|науп?оп/, "Нон-фікшн"],
+  [/young adult|підлітк/, "Young adult"], [/дитяч/, "Дитяча"], [/класичн/, "Класика"], [/проза/, "Сучасна проза"],
+];
+function ybGenre(cats){
+  const names = (cats || []).map(c => (c.name || "").toLowerCase()).join(" | ");
+  const hit = YB_GENRES.find(([re]) => re.test(names));
+  return hit ? hit[1] : "";
+}
+async function searchYakaboo(q){
+  const body = JSON.stringify({query:{bool:{
+    should:[
+      {multi_match:{query:q, fields:["name^4","author_label.label^2"], type:"cross_fields", operator:"and", boost:3}},
+      {multi_match:{query:q, fields:["name^4","author_label.label^2"], type:"best_fields"}}
+    ], minimum_should_match:1,
+    filter:[{terms:{attribute_set_id:[20,211,212]}}]}}});
+  const ctl = ("AbortController" in window) ? new AbortController() : null;
+  const t = ctl ? setTimeout(()=>ctl.abort(), 9000) : null;
+  const r = await fetch(YB_API, {method:"POST", headers:{"Content-Type":"application/json"}, body, signal: ctl ? ctl.signal : undefined});
+  if(t) clearTimeout(t);
+  if(!r.ok){ const e = new Error("HTTP " + r.status); e.status = r.status; throw e; }
+  const j = await r.json();
+  const cyr = /[а-яіїєґ]/i.test(q);
+  /* одна книжка — один рядок: паперове видання перемагає електронне й аудіо */
+  const groups = new Map();
+  ((j.hits && j.hits.hits) || []).forEach((h, i) => {
+    const s = h._source || {};
+    const title = (s.name || "").trim();
+    if(!title) return;
+    const author = (s.author_label || []).map(a => a.label).filter(Boolean).slice(0,2).join(", ");
+    const kind = ((s.book_publication_label || [])[0] || {}).label || "";
+    const item = {title, author, year: s.book_year ? String(s.book_year) : "", cover: s.image ? YB_IMG + s.image : null,
+                  genre: ybGenre(s.category), kind, src:"Yakaboo", rank:i};
+    const key = normTitle(title) + "|" + normTitle(author);
+    const old = groups.get(key);
+    if(!old || (old.kind !== "Паперова" && kind === "Паперова")) groups.set(key, Object.assign(item, {rank: old ? old.rank : i}));
+  });
+  /* комплекти й видання латиницею — в кінець, якщо шукаєш кирилицею */
+  const score = b => b.rank + (/комплект/i.test(b.title) ? 40 : 0) + (cyr && !/[а-яіїєґ]/i.test(b.title) ? 30 : 0);
+  return [...groups.values()].sort((a,b) => score(a) - score(b)).slice(0, 10);
+}
 async function searchWiki(q){
   const u = "https://uk.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=10&gsrsearch=" + encodeURIComponent(q)
     + "&prop=pageimages|pageprops&piprop=thumbnail&pithumbsize=400&ppprop=wikibase_item";
@@ -1566,10 +1614,10 @@ async function searchGoogle(q){
     src:"Google Books"}));
 }
 async function searchBooks(q){
-  const jobs = [searchWiki(q), searchGoogle(q), searchOpenLibrary(q)];
+  const jobs = [searchYakaboo(q), searchWiki(q), searchGoogle(q), searchOpenLibrary(q)];
   const res = await Promise.allSettled(jobs);
   const okCount = res.filter(r => r.status === "fulfilled").length;
-  const googleBlocked = res[1].status === "rejected" && (res[1].reason && (res[1].reason.status === 429 || res[1].reason.status === 403));
+  const googleBlocked = res[2].status === "rejected" && (res[2].reason && (res[2].reason.status === 429 || res[2].reason.status === 403));
   const merged = [];
   const seen = new Map();
   res.forEach(r => { if(r.status === "fulfilled") r.value.forEach(b => {
@@ -1605,13 +1653,13 @@ function coverToData(url){
 
 function resultsHTML(r){
   if(r.offline) return '<div class="note">Не вдалося звʼязатися з каталогами книжок. Схоже, немає інтернету — заповни поля вручну, обкладинку можна підтягнути пізніше.</div>';
-  if(!r.list.length) return '<div class="note">Не знайшлося ні у Вікіпедії, ні в Open Library. Спробуй коротшу назву або тільки прізвище автора.'
+  if(!r.list.length) return '<div class="note">Не знайшлося ні в Yakaboo, ні у Вікіпедії, ні в Open Library. Спробуй коротшу назву або тільки прізвище автора.'
     + (state.gbKey ? '' : ' З власним ключем Google Books знаходиться більше (розділ «Я»).') + '</div>';
   return r.list.map((b,i)=>
     '<div class="res" data-res="'+i+'"><div class="res-cover">'+(b.cover ? '<img src="'+b.cover+'" alt="" onerror="this.remove()">' : '📕')+'</div>'
     + '<div class="res-txt"><div class="res-t">'+esc(b.title)+'</div>'
     + '<div class="res-a">'+esc([b.author, b.year].filter(Boolean).join(" · ") || "автор невідомий")+'</div>'
-    + '<div class="res-src">'+esc(b.src)+'</div></div></div>').join("");
+    + '<div class="res-src">'+esc(b.src + (b.kind ? " · " + b.kind.toLowerCase() : "") + (b.genre ? " · " + b.genre.toLowerCase() : ""))+'</div></div></div>').join("");
 }
 
 function wireSearch(onPick){
