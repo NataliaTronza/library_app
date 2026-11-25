@@ -1085,15 +1085,47 @@ function perRow(){
   return Math.max(2, Math.floor((w + 10) / 94));
 }
 
+/* ═══ ОБКЛАДИНКИ БЕЗ ОБРІЗАННЯ ═══
+   Книжка бере пропорції своєї обкладинки (у межах maxW×maxH), як на справжній полиці:
+   вужча обкладинка — вужча книжка, ширша — нижча. Пропорцію запамʼятовуємо в b.ar,
+   щоб наступного разу книжка одразу стала правильного розміру. */
+const coverKey = src => src ? src.length + ":" + src.slice(-48) : "";
+function coverBox(b, maxW, maxH){
+  const src = bookCover(b);
+  if(!src || !b.ar || b.arKey !== coverKey(src)) return null;
+  const ar = Math.min(1.2, Math.max(0.45, b.ar));
+  return ar < maxW / maxH ? {w: Math.round(maxH * ar), h: maxH} : {w: maxW, h: Math.round(maxW / ar)};
+}
+/* для маленьких обкладинок у списках: місце під обкладинку лишається тієї ж ширини, щоб текст поруч не стрибав */
+const coverSizeCSS = (b, maxW, maxH) => {
+  const s = coverBox(b, maxW, maxH); if(!s) return "";
+  const side = (maxW - s.w) / 2;
+  return "width:" + s.w + "px;height:" + s.h + "px;" + (side > 0 ? "margin:0 " + side + "px;" : "");
+};
+function fitCover(el, b, maxW, maxH){
+  const apply = () => { const s = coverBox(b, maxW, maxH); if(s){ el.style.width = s.w + "px"; el.style.height = s.h + "px"; } };
+  apply();
+  const img = el.querySelector("img"); if(!img) return;
+  const learn = () => {
+    if(!img.naturalWidth || !img.naturalHeight) return;
+    const ar = Math.round(img.naturalWidth / img.naturalHeight * 1000) / 1000, key = coverKey(bookCover(b));
+    if(b.arKey === key && Math.abs((b.ar || 0) - ar) < 0.004) return;
+    b.ar = ar; b.arKey = key;
+    apply(); scheduleSave();
+  };
+  if(img.complete) learn(); else img.addEventListener("load", learn, {once:true});
+}
+
 function bookEl(b){
   const el = document.createElement("div");
   const cov = bookCover(b);
   el.className = "book" + (cov ? " has-cover" : "") + (b.status !== "read" ? " badged" : "");
   const c = coverColor(b);
   el.style.background = "linear-gradient(100deg,"+c+" 0%,"+c+" 78%,rgba(0,0,0,.28) 100%)";
-  el.innerHTML = (cov ? '<img src="'+cov+'" alt="" onerror="this.parentNode.classList.remove(\'has-cover\');this.remove()">' : "")
+  el.innerHTML = (cov ? '<img src="'+cov+'" alt="" onerror="this.parentNode.classList.remove(\'has-cover\');this.parentNode.style.width=\'\';this.parentNode.style.height=\'\';this.remove()">' : "")
     + '<div class="bk-title">'+esc(b.title)+'</div><div class="bk-author">'+esc(b.author||"")+'</div>'
     + (b.status === "reading" ? '<span class="bk-flag reading" title="Читаю"></span>' : b.status === "planned" ? '<span class="bk-flag" title="У планах"></span>' : "");
+  if(cov) fitCover(el, b, 84, 122);
   el.dataset.id = b.id;
   el.onclick = () => { if(Date.now() - dragEndedAt < 450) return; openDetail(b.id); };
   el.addEventListener("pointerdown", e => dragPointerDown(e, el, b));
@@ -1153,9 +1185,11 @@ function dragStart(){
     return {el, id:el.dataset.id, l:r.left + sx, r:r.right + sx, t:r.top + sy, b:r.bottom + sy};
   });
   d.rows = [];
+  /* книжки різної висоти стоять на одній дошці, тож ряд визначає нижній край */
   d.slots.forEach(s => {
-    let row = d.rows.find(r => Math.abs(r.t - s.t) < 12);
+    let row = d.rows.find(r => Math.abs(r.b - s.b) < 12);
     if(!row){ row = {t:s.t, b:s.b, items:[]}; d.rows.push(row); }
+    row.t = Math.min(row.t, s.t, s.b - 122);
     row.items.push(s);
   });
   d.rows.forEach(r => r.items.sort((a,b) => a.l - b.l));
@@ -1223,8 +1257,8 @@ function placeMark(drop){
   const s = drop.slot, sx = window.scrollX, sy = window.scrollY;
   const x = drop.before ? s.l - 5 : s.r + 5;
   m.style.left = (x - 2 - sx) + "px";
-  m.style.top = (s.t - 4 - sy) + "px";
-  m.style.height = (s.b - s.t + 8) + "px";
+  m.style.top = (drop.row.t - 4 - sy) + "px";
+  m.style.height = (drop.row.b - drop.row.t + 8) + "px";
   m.classList.remove("off");
 }
 function dragAutoScroll(){
@@ -1468,9 +1502,10 @@ $("gbKey").oninput = e => { state.gbKey = e.target.value.trim(); scheduleSave();
 $("gbKey").onblur = () => renderMascotSettings();
 
 /* ═══ ЗАРАЗ ЧИТАЮ ═══ */
+const MINI_BOX = {"now-cover":[60,88], "tb-c":[36,52]};
 function miniCover(b, cls){
-  const cov = bookCover(b), c = coverColor(b);
-  return '<div class="'+cls+'" style="background:linear-gradient(100deg,'+c+' 0%,'+c+' 78%,rgba(0,0,0,.28) 100%)">'
+  const cov = bookCover(b), c = coverColor(b), box = MINI_BOX[cls];
+  return '<div class="'+cls+'" style="'+(box ? coverSizeCSS(b, box[0], box[1]) : '')+'background:linear-gradient(100deg,'+c+' 0%,'+c+' 78%,rgba(0,0,0,.28) 100%)">'
     + (cov ? '<img src="'+cov+'" alt="" onerror="this.remove()">' : '<span>'+esc(b.title)+'</span>') + '</div>';
 }
 function renderNow(){
@@ -2309,7 +2344,7 @@ function openDetail(id){
   openSheet(
     '<div class="cat-hd"><span class="mono">Каталожна картка</span><span style="display:flex;gap:10px;align-items:center"><span class="mono">№ '+no+'</span>'+XICON+'</span></div>'
     + '<div class="cat-main">'
-    + '<div class="detail-cover" style="background:linear-gradient(100deg,'+c+' 0%,'+c+' 78%,rgba(0,0,0,.28) 100%)">'
+    + '<div class="detail-cover" id="dCover" style="'+coverSizeCSS(b, 102, 150)+'background:linear-gradient(100deg,'+c+' 0%,'+c+' 78%,rgba(0,0,0,.28) 100%)">'
     + (cov ? '<img src="'+cov+'" alt="" onerror="this.remove()">' : '<div class="bk-title" style="font-size:13px">'+esc(b.title)+'</div><div class="bk-author" style="font-size:10px">'+esc(b.author||"")+'</div>')
     + '</div><div style="flex:1;min-width:0">'
     + '<h3 class="cat-title">'+esc(b.title)+'</h3>'
@@ -2333,6 +2368,7 @@ function openDetail(id){
     + '<div class="row" style="margin-top:10px"><button class="btn ghost sm" id="dEdit">Редагувати</button><button class="btn danger sm" id="dDel">Видалити</button></div>'
     + '<span class="hole"></span>'
   );
+  if(cov && !coverBox(b, 102, 150)) fitCover($("dCover"), b, 102, 150);
   const rd = $("dRead");
   if(rd) rd.onclick = ()=>{ markRead(b); closeModal(); celebrate(b); renderAll(); scheduleSave(); };
   const rg = $("dReading");
