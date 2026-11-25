@@ -189,7 +189,9 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .book.has-cover .bk-title,.book.has-cover .bk-author{display:none}
 .bk-flag{position:absolute;top:-2px;right:8px;width:12px;height:24px;background:var(--stamp);clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%);box-shadow:0 2px 3px rgba(0,0,0,.3)}
 .bk-flag.reading{background:var(--brass);height:30px}
-.decor{width:74px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;position:relative;z-index:1}
+.decor{width:74px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;position:relative;z-index:1;cursor:grab;
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.decor img{-webkit-user-drag:none;pointer-events:none}
 .decor svg,.decor img{filter:drop-shadow(1px 3px 3px var(--bshadow))}
 /* предмет стоїть трохи «вглиб» дошки, а під ним — тінь дотику: так видно, що він спирається на полицю */
 .decor-in{position:relative;display:flex;align-items:flex-end;justify-content:center}
@@ -432,14 +434,18 @@ input[type=date].inp.empty{color:var(--muted)}
 /* ═══ перетягування книжок ═══ */
 .book{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .book img{-webkit-user-drag:none;pointer-events:none}
-.book.drag-src{opacity:.22;filter:grayscale(.6);transform:none!important;transition:opacity .15s}
-.book.nudge-l{transform:translateX(-11px)!important}
-.book.nudge-r{transform:translateX(11px)!important}
-.book.landed{animation:landed .5s cubic-bezier(.3,1.45,.5,1)}
+.book.drag-src,.decor.drag-src{opacity:.22;filter:grayscale(.6);transform:none!important;transition:opacity .15s}
+.book.nudge-l,.decor.nudge-l{transform:translateX(-11px)!important}
+.book.nudge-r,.decor.nudge-r{transform:translateX(11px)!important}
+.decor{transition:transform .22s cubic-bezier(.3,1.3,.4,1)}
+.book.landed,.decor.landed{animation:landed .5s cubic-bezier(.3,1.45,.5,1)}
 @keyframes landed{0%{transform:translateY(-16px) scale(1.06)}100%{transform:none}}
 .drag-ghost{position:fixed;left:0;top:0;z-index:70;pointer-events:none;margin:0;transition:none!important;
   box-shadow:0 22px 34px rgba(0,0,0,.38),0 4px 10px rgba(0,0,0,.2)!important;will-change:transform}
 .drag-ghost.lifting{transition:transform .18s cubic-bezier(.3,1.3,.5,1)!important}
+.drag-ghost.decor{box-shadow:none!important;background:none!important;z-index:70}
+.drag-ghost.decor .decor-sh{display:none}
+.drag-ghost.decor img{filter:drop-shadow(0 16px 14px rgba(0,0,0,.32))!important}
 .drop-mark{position:fixed;z-index:69;width:4px;border-radius:3px;background:var(--brass);pointer-events:none;
   box-shadow:0 0 0 3px color-mix(in srgb,var(--brass) 28%,transparent),0 0 16px var(--brass);transition:left .12s,top .12s,opacity .12s}
 .drop-mark.off{opacity:0}
@@ -791,29 +797,12 @@ const SEASON_LINES = {
 };
 
 /* ═══ ПРЕДМЕТИ КРАМНИЦІ ═══ */
-const ART = {
-  plant:'<svg width="52" height="64" viewBox="0 0 52 64"><path d="M18 42h16l-2 20H20z" fill="#B9754A"/><path d="M18 42h16l-1 5H19z" fill="#9C5F3A"/><path d="M26 42c0-10-8-14-12-20 8 1 12 6 12 12z" fill="#5C8A50"/><path d="M26 42c0-12 7-17 13-22-3 9-6 15-13 22z" fill="#6FA05F"/><path d="M26 42c0-7 3-11 6-15-1 7-2 11-6 15z" fill="#4E7A45"/></svg>',
-  lamp:'<svg width="46" height="62" viewBox="0 0 46 62"><ellipse cx="23" cy="58" rx="14" ry="4" fill="#7A5C3E"/><path d="M20 34h6v22h-6z" fill="#8A6A46"/><path d="M10 34 16 12h14l6 22z" fill="#E9C46A"/><path d="M10 34 16 12h5l-4 22z" fill="#F2D68F"/></svg>',
-  cat:'<svg width="56" height="48" viewBox="0 0 56 48"><path d="M12 46c-4-8-2-18 6-22 7-3 16-2 21 4 5 6 5 14 2 18z" fill="#7C6B8A"/><path d="M17 24l-2-10 9 5z" fill="#7C6B8A"/><path d="M35 23l6-9 1 10z" fill="#7C6B8A"/><circle cx="22" cy="33" r="2" fill="#2B2438"/><circle cx="33" cy="33" r="2" fill="#2B2438"/><path d="M25 38h5l-2.5 3z" fill="#D89AA5"/></svg>',
-  tea:'<svg width="52" height="44" viewBox="0 0 52 44"><path d="M8 18h28v14a8 8 0 0 1-8 8H16a8 8 0 0 1-8-8z" fill="#F3EDE1"/><path d="M8 18h28v5H8z" fill="#C9A227"/><path d="M36 22h6a5 5 0 0 1 0 10h-6" fill="none" stroke="#F3EDE1" stroke-width="4"/><path d="M17 12c0-3 3-3 3-6M25 12c0-3 3-3 3-6" stroke="#C6BBA9" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
-  crystal:'<svg width="42" height="60" viewBox="0 0 42 60"><ellipse cx="21" cy="56" rx="13" ry="4" fill="#6B5B95"/><path d="M21 6 34 34 21 52 8 34z" fill="#D9B8E8"/><path d="M21 6 34 34 21 52z" fill="#B990D6"/><path d="M21 6 8 34l13 18z" fill="#EBD5F5"/></svg>',
-  bust:'<svg width="44" height="62" viewBox="0 0 44 62"><path d="M10 58h24l-2-8H12z" fill="#A99374"/><path d="M14 50c0-8-2-12 0-18 2-7 14-8 16-1 2 6 0 11-2 19z" fill="#C7B393"/><path d="M18 28c2-2 6-2 8 0" stroke="#9A8467" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
-  clock:'<svg width="46" height="56" viewBox="0 0 46 56"><rect x="8" y="12" width="30" height="38" rx="6" fill="#9C6B45"/><circle cx="23" cy="30" r="11" fill="#F5EFE2"/><path d="M23 23v7l5 3" stroke="#4A3B2C" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M14 12c0-5 4-8 9-8s9 3 9 8z" fill="#B07E52"/></svg>',
-  candle:'<svg width="36" height="58" viewBox="0 0 36 58"><ellipse cx="18" cy="54" rx="11" ry="4" fill="#B08A5E"/><rect x="10" y="20" width="16" height="34" rx="4" fill="#F2E7D3"/><rect x="10" y="20" width="6" height="34" fill="#FBF5E9"/><path d="M18 20c-4-4 0-8 0-12 2 4 6 8 0 12z" fill="#E9A94B"/></svg>',
-  globe:'<svg width="50" height="58" viewBox="0 0 50 58"><path d="M18 54h14l-3-8h-8z" fill="#8A6A46"/><circle cx="25" cy="26" r="18" fill="#7FA8C4"/><path d="M14 18c6 3 14 3 21-1M12 30c8 4 18 3 25-2" stroke="#5C8A50" stroke-width="3" fill="none"/><path d="M25 8c-6 8-6 28 0 36" stroke="#EAF1F5" stroke-width="1.6" fill="none"/></svg>',
-  frame:'<svg width="52" height="56" viewBox="0 0 52 56"><rect x="6" y="10" width="40" height="42" rx="4" fill="#A9743F"/><rect x="12" y="16" width="28" height="30" rx="2" fill="#EFE3CE"/><circle cx="21" cy="28" r="5" fill="#C9A227"/><path d="M14 44l9-10 6 6 5-4 4 8z" fill="#8AA97C"/></svg>',
-  owl:'<svg width="46" height="52" viewBox="0 0 46 52"><path d="M23 48c-9 0-15-7-15-16S14 8 23 8s15 15 15 24-6 16-15 16z" fill="#9C8065"/><circle cx="17" cy="24" r="6" fill="#F5EFE2"/><circle cx="29" cy="24" r="6" fill="#F5EFE2"/><circle cx="17" cy="24" r="2.6" fill="#3B3049"/><circle cx="29" cy="24" r="2.6" fill="#3B3049"/><path d="M23 29l-3 4h6z" fill="#D89A4B"/></svg>',
-  stack:'<svg width="54" height="46" viewBox="0 0 54 46"><rect x="8" y="32" width="38" height="10" rx="2" fill="#7A2E2E"/><rect x="11" y="22" width="32" height="10" rx="2" fill="#3F5B45"/><rect x="14" y="12" width="27" height="10" rx="2" fill="#2E4A6B"/><path d="M8 36h38M11 26h32M14 16h27" stroke="rgba(255,255,255,.35)" stroke-width="1.4"/></svg>',
-};
+/* у крамниці — лише справжні картинки: свічка «Slow days» і твої власні предмети.
+   Намальовані предмети прибрано; якщо щось із них було куплене — монети повертаються (див. normalizeState). */
 const SHOP = [
-  {id:"plant",name:"Рослина",price:30},{id:"tea",name:"Чашка чаю",price:30},
   {id:"candle-slow",name:"Свічка «Slow days»",price:30,src:"item-candle-slowdays.png",w:92,base:.956},  /* base: низ деревʼяної підставки (під нею ще звисає стрічка) */
-  {id:"candle",name:"Свічка",price:45},{id:"stack",name:"Стосик книг",price:45},
-  {id:"lamp",name:"Лампа",price:60},{id:"frame",name:"Фоторамка",price:60},
-  {id:"crystal",name:"Кристал",price:75},{id:"clock",name:"Годинник",price:75},
-  {id:"cat",name:"Кіт",price:90},{id:"owl",name:"Сова",price:90},
-  {id:"globe",name:"Глобус",price:110},{id:"bust",name:"Погруддя",price:120},
 ];
+const RETIRED_ITEMS = {plant:30, tea:30, candle:45, stack:45, lamp:60, frame:60, crystal:75, clock:75, cat:90, owl:90, globe:110, bust:120};
 
 const COINS_PER_BOOK = 15;
 const PER_LEVEL = 5;
@@ -899,6 +888,11 @@ function normalizeState(){
   if(!THEMES[state.theme]) state.theme = OLD[state.theme] || "lamp";
   if(!state.goals || typeof state.goals !== "object") state.goals = {};
   if(!["dates","year","none"].includes(state.dateMode)) state.dateMode = "dates";
+  /* прибрані намальовані предмети: забираємо з полиці й повертаємо монети */
+  state.owned.filter(id => RETIRED_ITEMS[id] && !state.custom.some(c => c.id === id)).forEach(id => { state.coins = (state.coins || 0) + RETIRED_ITEMS[id]; });
+  state.owned = state.owned.filter(id => !RETIRED_ITEMS[id] || state.custom.some(c => c.id === id));
+  state.placed = state.placed.filter(id => allItems().some(i => i.id === id) && state.owned.includes(id));
+  if(state.shelf !== undefined && !Array.isArray(state.shelf)) delete state.shelf;
   state.books.forEach(b => {
     if(b.status === "read" && !b.readAt && !b.readYearOnly){
       const iso = parseUkDate(b.dateRead);
@@ -920,6 +914,7 @@ function normalizeState(){
   /* сталий номер картки: перестановка на полиці його не змінює */
   let maxNo = state.books.reduce((m, b) => Math.max(m, +b.no || 0), 0);
   state.books.forEach(b => { if(!(+b.no > 0)) b.no = ++maxNo; });
+  syncShelf();
 }
 const nextBookNo = () => state.books.reduce((m, b) => Math.max(m, +b.no || 0), 0) + 1;
 const sameGenre = (a, b) => a.toLocaleLowerCase("uk") === b.toLocaleLowerCase("uk");
@@ -1085,11 +1080,6 @@ function renderTabs(){
   $("shelfCount").textContent = n ? n + " " + plural(n,"книга","книги","книг") : "";
 }
 
-function perRow(){
-  const w = Math.min(window.innerWidth, 520) - 32 - 20;
-  return Math.max(2, Math.floor((w + 10) / 94));
-}
-
 /* ═══ ОБКЛАДИНКИ БЕЗ ОБРІЗАННЯ ═══
    Книжка бере пропорції своєї обкладинки (у межах maxW×maxH), як на справжній полиці:
    вужча обкладинка — вужча книжка, ширша — нижча. Пропорцію запамʼятовуємо в b.ar,
@@ -1132,22 +1122,23 @@ function bookEl(b){
     + (b.status === "reading" ? '<span class="bk-flag reading" title="Читаю"></span>' : b.status === "planned" ? '<span class="bk-flag" title="У планах"></span>' : "");
   if(cov) fitCover(el, b, 84, 122);
   el.dataset.id = b.id;
+  el.dataset.tok = "b:" + b.id;
   el.onclick = () => { if(Date.now() - dragEndedAt < 450) return; openDetail(b.id); };
-  el.addEventListener("pointerdown", e => dragPointerDown(e, el, b));
+  el.addEventListener("pointerdown", e => dragPointerDown(e, el, "b:" + b.id));
   el.addEventListener("contextmenu", e => e.preventDefault());
   return el;
 }
 
-/* ═══ ПЕРЕТЯГУВАННЯ КНИЖОК ═══
+/* ═══ ПЕРЕТЯГУВАННЯ КНИЖОК І ПРЕДМЕТІВ ═══
    Палець: утримати ~0,35 с, потім вести. Якщо палець рушив раніше — це прокрутка, не перетягування.
-   Миша: просто тягнути. Порядок книжок у state.books і є порядком на полиці. */
+   Миша: просто тягнути. Порядок на полиці — state.shelf: книжки "b:<id>" і предмети "d:<id>" разом. */
 let drag = null, dragEndedAt = 0;
 const DRAG_HOLD = 350, DRAG_SLOP = 9;
 
-function dragPointerDown(e, el, b){
+function dragPointerDown(e, el, tok){
   if(drag || (e.pointerType === "mouse" && e.button !== 0)) return;
   const touch = e.pointerType !== "mouse";
-  drag = {b, el, id:e.pointerId, touch, sx:e.clientX, sy:e.clientY, cx:e.clientX, cy:e.clientY, active:false, drop:null};
+  drag = {tok, el, id:e.pointerId, touch, sx:e.clientX, sy:e.clientY, cx:e.clientX, cy:e.clientY, active:false, drop:null};
   if(touch) drag.timer = setTimeout(() => { if(drag && !drag.active) dragStart(); }, DRAG_HOLD);
   document.addEventListener("pointermove", dragMove);
   document.addEventListener("pointerup", dragUp);
@@ -1183,14 +1174,14 @@ function dragStart(){
   try{ if(navigator.vibrate) navigator.vibrate(12); }catch(e){}
   try{ window.getSelection().removeAllRanges(); }catch(e){}
   document.body.classList.add("dragging");
-  /* знімок положень усіх книжок — у координатах документа, щоб прокрутка не збивала */
+  /* знімок положень усіх книжок і предметів — у координатах документа, щоб прокрутка не збивала */
   const sx = window.scrollX, sy = window.scrollY;
-  d.slots = [...document.querySelectorAll("#shelves .book")].map(el => {
+  d.slots = [...document.querySelectorAll("#shelves .book, #shelves .decor")].map(el => {
     const r = el.getBoundingClientRect();
-    return {el, id:el.dataset.id, l:r.left + sx, r:r.right + sx, t:r.top + sy, b:r.bottom + sy};
+    return {el, id:el.dataset.tok, l:r.left + sx, r:r.right + sx, t:r.top + sy, b:r.bottom + sy};
   });
   d.rows = [];
-  /* книжки різної висоти стоять на одній дошці, тож ряд визначає нижній край */
+  /* книжки й предмети різної висоти стоять на одній дошці, тож ряд визначає нижній край */
   d.slots.forEach(s => {
     let row = d.rows.find(r => Math.abs(r.b - s.b) < 12);
     if(!row){ row = {t:s.t, b:s.b, items:[]}; d.rows.push(row); }
@@ -1198,13 +1189,13 @@ function dragStart(){
     row.items.push(s);
   });
   d.rows.forEach(r => r.items.sort((a,b) => a.l - b.l));
-  d.order = d.slots.map(s => s.id);   /* порядок видимих книжок */
+  d.order = d.slots.map(s => s.id);   /* порядок видимого на полиці */
   const src = d.slots.find(s => s.el === d.el);
   d.w = src.r - src.l; d.h = src.b - src.t;
   const g = d.el.cloneNode(true);
   g.classList.add("drag-ghost"); g.classList.remove("landed");
   g.style.width = d.w + "px"; g.style.height = d.h + "px";
-  /* спершу — точно на місці книжки, потім плавно «знімаємо з полиці» над палець */
+  /* спершу — точно на своєму місці, потім плавно «знімаємо з полиці» над палець */
   g.style.transform = "translate(" + (src.l - sx) + "px," + (src.t - sy) + "px)";
   document.body.appendChild(g);
   d.ghost = g;
@@ -1224,7 +1215,7 @@ function positionGhost(){
   const d = drag; if(!d || !d.ghost) return;
   d.ghost.style.transform = "translate(" + (d.cx - d.w / 2) + "px," + (d.cy - d.h - 18) + "px) rotate(3deg)";
 }
-/* куди впаде книжка: найближчий ряд по висоті, у ньому — найближча книжка по горизонталі */
+/* куди впаде: найближчий ряд по висоті, у ньому — найближча книжка чи предмет по горизонталі */
 function findDrop(){
   const d = drag, x = d.cx + window.scrollX, y = d.cy + window.scrollY;
   if(!d.rows.length) return null;
@@ -1235,9 +1226,9 @@ function findDrop(){
   if(best.el === d.el) return null;
   const before = x < (best.l + best.r) / 2;
   /* якщо порядок не зміниться — нікуди не падаємо */
-  const ord = d.order.filter(id => id !== d.b.id);
+  const ord = d.order.filter(id => id !== d.tok);
   let at = ord.indexOf(best.id) + (before ? 0 : 1);
-  ord.splice(at, 0, d.b.id);
+  ord.splice(at, 0, d.tok);
   if(ord.join() === d.order.join()) return null;
   return {slot:best, row, before};
 }
@@ -1285,18 +1276,19 @@ function dragFinish(commit){
   dragCleanup();
   dragEndedAt = Date.now();
   if(!commit || !drop) return;
-  const arr = state.books;
-  const from = arr.findIndex(x => x.id === d.b.id);
+  const seq = state.shelf;
+  const from = seq.indexOf(d.tok);
   if(from < 0) return;
-  const [bk] = arr.splice(from, 1);
-  let to = arr.findIndex(x => x.id === drop.slot.id);
-  if(to < 0){ arr.splice(from, 0, bk); return; }
+  seq.splice(from, 1);
+  let to = seq.indexOf(drop.slot.id);
+  if(to < 0){ seq.splice(from, 0, d.tok); return; }
   if(!drop.before) to++;
-  arr.splice(to, 0, bk);
+  seq.splice(to, 0, d.tok);
+  syncShelf();   /* книжки в state.books ідуть за порядком полиці */
   const firstDrag = !state.dragTipSeen;
   state.dragTipSeen = true;
   renderShelves(); renderHero(); scheduleSave();
-  const el = document.querySelector('#shelves .book[data-id="' + bk.id + '"]');
+  const el = document.querySelector('#shelves [data-tok="' + d.tok + '"]');
   if(el){ el.classList.add("landed"); setTimeout(() => el.classList.remove("landed"), 600); }
   if(firstDrag) toast("Готово — порядок збережено");
 }
@@ -1317,99 +1309,109 @@ function dragCleanup(){
 
 function allItems(){ return SHOP.concat(state.custom); }
 const itemPic = item => item.img || item.src || null;
-function itemArt(item){ return itemPic(item) ? '<img src="'+itemPic(item)+'" alt="">' : (ART[item.id] || ""); }
+function itemArt(item){ return itemPic(item) ? '<img src="'+itemPic(item)+'" alt="">' : ""; }
+
+/* порядок на полиці: книжки й предмети разом. Нова книжка стає в кінець,
+   новий предмет — у випадкове місце (потім його можна пересунути) */
+function syncShelf(){
+  const fresh = !Array.isArray(state.shelf);
+  const want = new Set(state.books.map(b => "b:" + b.id).concat(state.placed.map(id => "d:" + id)));
+  const seq = [], have = new Set();
+  (fresh ? [] : state.shelf).forEach(t => { if(want.has(t) && !have.has(t)){ seq.push(t); have.add(t); } });
+  state.books.forEach(b => { const t = "b:" + b.id; if(!have.has(t)){ seq.push(t); have.add(t); } });
+  state.placed.forEach(id => {
+    const t = "d:" + id; if(have.has(t)) return;
+    const pos = fresh ? hashStr(id) % (seq.length + 1) : Math.floor(Math.random() * (seq.length + 1));
+    seq.splice(pos, 0, t); have.add(t);
+  });
+  const changed = fresh || seq.join() !== state.shelf.join();
+  state.shelf = seq;
+  const at = {}; seq.forEach((t, i) => at[t] = i);
+  state.books.sort((x, y) => at["b:" + x.id] - at["b:" + y.id]);
+  return changed;
+}
+
+function decorEl(item, tok){
+  const d = document.createElement("div");
+  d.className = "decor";
+  if(item.w) d.style.width = item.w + "px";
+  /* base — де в картинці лінія, якою предмет стоїть (частка висоти; 1 — самий низ). Опускаємо так,
+     щоб ця лінія була на 4px нижче верхнього краю дошки, і кладемо під неї тінь дотику */
+  const lift = item.base ? (1 - item.base) * 100 : 0;
+  d.innerHTML = '<div class="decor-in" style="transform:translateY(calc('+lift.toFixed(1)+'% + 4px))">'
+    + '<img src="'+itemPic(item)+'" alt="" draggable="false" style="max-width:'+(item.w||74)+'px;max-height:112px;object-fit:contain">'
+    + '<i class="decor-sh" style="bottom:calc('+lift.toFixed(1)+'% - 5px)"></i></div>';
+  d.dataset.tok = tok;
+  d.addEventListener("pointerdown", e => dragPointerDown(e, d, tok));
+  d.addEventListener("contextmenu", e => e.preventDefault());
+  return d;
+}
 
 function renderShelves(){
-  const host = $("shelves");
-  host.innerHTML = "";
-  const books = state.books.filter(b => filter==="all" ? true : b.status===filter);
-  const decor = state.placed.slice();
-  const cap = perRow();
+  /* полицю збираємо окремо й підміняємо за один раз: якщо спершу спорожнити її,
+     сторінка на мить коротшає і браузер підкидає прокрутку вгору */
+  const host = $("shelves"), out = document.createDocumentFragment();
+  const W = Math.min(window.innerWidth, 520) - 32 - 20, GAP = 10;
+  const html = h => { const t = document.createElement("template"); t.innerHTML = h; return t.content; };
+  if(syncShelf()) scheduleSave();
+  const byId = {}; state.books.forEach(b => byId[b.id] = b);
+  const items = {}; allItems().forEach(i => items[i.id] = i);
+  const slots = [];
+  state.shelf.forEach(t => {
+    const id = t.slice(2);
+    if(t[0] === "b"){ const b = byId[id]; if(b && (filter === "all" || b.status === filter)) slots.push({type:"book", data:b, tok:t}); }
+    else if(items[id]) slots.push({type:"decor", data:items[id], tok:t});
+  });
+  const nBooks = slots.filter(x => x.type === "book").length;
 
-  if(!state.dragTipSeen && books.length >= 2){
-    host.insertAdjacentHTML("beforeend", '<div class="drag-tip" id="dragTip">'
+  if(!state.dragTipSeen && slots.length >= 2){
+    out.appendChild(html('<div class="drag-tip" id="dragTip">'
       + '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12 10V4.5a1.5 1.5 0 0 1 3 0V11"/><path d="M15 10.5V7a1.5 1.5 0 0 1 3 0v6.5a7 7 0 0 1-7 7h-.6a6 6 0 0 1-4.6-2.2L3.6 15.4a1.6 1.6 0 0 1 2.3-2.2L9 15.5V9a1.5 1.5 0 0 1 3 0"/></svg>'
-      + '<span>Утримай книжку пальцем — і перетягни на інше місце.</span><button aria-label="Зрозуміло">×</button></div>');
-    host.querySelector("#dragTip button").onclick = () => { state.dragTipSeen = true; renderShelves(); scheduleSave(); };
+      + '<span>Утримай книжку чи предмет пальцем — і перетягни на інше місце.</span><button aria-label="Зрозуміло">×</button></div>'));
+    out.querySelector("#dragTip button").onclick = () => { state.dragTipSeen = true; renderShelves(); scheduleSave(); };
   }
-  if(books.length===0 && decor.length===0){
-    host.innerHTML = '<div class="shelf-row"><div class="empty-note">'
+  if(!slots.length){
+    out.appendChild(html('<div class="shelf-row"><div class="empty-note">'
       + (filter==="all" ? "Полиця порожня. Додай першу книгу — вона стане сюди." : "У цьому розділі поки нічого немає.")
-      + '</div></div><div class="plank"></div>';
+      + '</div></div><div class="plank"></div>'));
+    host.replaceChildren(out);
     return;
   }
-
-  const decorPerRowMax = Math.max(1, Math.min(2, cap - 1));
-  let nRows = Math.max(1, Math.ceil((books.length + decor.length) / cap));
-  let layout;
-  for(let guard = 0; guard < 60; guard++){
-    layout = Array.from({length:nRows}, ()=>[]);
-    decor.forEach((id, i) => {
-      let r = i % nRows, hops = 0;
-      while(layout[r].length >= decorPerRowMax && hops < nRows){ r = (r+1) % nRows; hops++; }
-      layout[r].push(id);
-    });
-    const slots = layout.reduce((sum, d) => sum + Math.max(0, cap - d.length), 0);
-    if(slots >= books.length) break;
-    nRows++;
+  /* сова (якщо ввімкнена) сидить одразу після останньої книжки */
+  if(state.mascotOn && nBooks){
+    let last = -1; slots.forEach((x, i) => { if(x.type === "book") last = i; });
+    slots.splice(last + 1, 0, {type:"owl"});
   }
-  const rows = [];
-  let bi = 0;
-  layout.forEach(rowDecor => {
-    const room = Math.max(0, cap - rowDecor.length);
-    const rowBooks = books.slice(bi, bi + room);
-    bi += rowBooks.length;
-    rows.push({books:rowBooks, decor:rowDecor});
+
+  /* розкладка по ширині: книжки різні (за обкладинкою), предмети — своєї ширини */
+  const widthOf = x => x.type === "book" ? ((coverBox(x.data, 84, 122) || {w:84}).w) : x.type === "decor" ? (x.data.w || 74) : 86;
+  const rows = []; let cur = [], used = 0;
+  slots.forEach(x => {
+    const w = widthOf(x), need = cur.length ? used + GAP + w : w;
+    if(cur.length && need > W){ rows.push(cur); cur = [x]; used = w; } else { cur.push(x); used = need; }
   });
-  while(bi < books.length){ const rowBooks = books.slice(bi, bi + cap); bi += rowBooks.length; rows.push({books:rowBooks, decor:[]}); }
+  if(cur.length) rows.push(cur);
+  while(rows.length < 3) rows.push([]);
 
-  if(state.mascotOn && books.length){
-    const li = rows.reduce((acc,x,i)=> x.books.length ? i : acc, 0);
-    const row = rows[li];
-    if(row.books.length + row.decor.length >= cap && row.books.length > 1){
-      const moved = row.books.pop();
-      if(!rows[li+1]) rows.push({books:[], decor:[]});
-      rows[li+1].books.unshift(moved);
-    }
-    row.owl = true;
-  }
-  while(rows.length < 3) rows.push({books:[], decor:[]});
-
-  rows.forEach((r, rowIndex)=>{
+  rows.forEach(r => {
     const row = document.createElement("div");
     row.className = "shelf-row";
-    const slots = r.books.map(b => ({type:"book", data:b}));
-    r.decor.forEach(id => { const pos = hashStr(id + "|" + rowIndex) % (slots.length + 1); slots.splice(pos, 0, {type:"decor", data:id}); });
-    if(r.owl) slots.push({type:"owl"});
-    slots.forEach(slot=>{
-      if(slot.type === "book"){ row.appendChild(bookEl(slot.data)); return; }
-      if(slot.type === "owl"){
-        const o = document.createElement("div");
-        o.className = "shelf-owl";
-        const ow = owlEl({h:114});
-        o.appendChild(ow);
-        o.onclick = ()=> owlAct(ow, Math.random() < .5 ? "hop" : "wink");
-        row.appendChild(o);
-        return;
-      }
-      const item = allItems().find(i=>i.id===slot.data);
-      if(!item) return;
-      const d = document.createElement("div");
-      d.className = "decor";
-      if(item.w) d.style.width = item.w + "px";
-      /* base — де в картинці лінія, якою предмет стоїть (частка висоти; 1 — самий низ). Опускаємо так,
-         щоб ця лінія була на 4px нижче верхнього краю дошки, і кладемо під неї тінь дотику */
-      const lift = item.base ? (1 - item.base) * 100 : 0;
-      d.innerHTML = '<div class="decor-in" style="transform:translateY(calc('+lift.toFixed(1)+'% + 4px))">'
-        + (itemPic(item) ? '<img src="'+itemPic(item)+'" alt="" style="max-width:'+(item.w||74)+'px;max-height:112px;object-fit:contain">' : (ART[item.id] || ""))
-        + '<i class="decor-sh" style="bottom:calc('+lift.toFixed(1)+'% - 5px)"></i></div>';
-      row.appendChild(d);
+    r.forEach(x => {
+      if(x.type === "book"){ row.appendChild(bookEl(x.data)); return; }
+      if(x.type === "decor"){ row.appendChild(decorEl(x.data, x.tok)); return; }
+      const o = document.createElement("div");
+      o.className = "shelf-owl";
+      const ow = owlEl({h:114});
+      o.appendChild(ow);
+      o.onclick = () => owlAct(ow, Math.random() < .5 ? "hop" : "wink");
+      row.appendChild(o);
     });
     const plank = document.createElement("div");
     plank.className = "plank";
-    host.appendChild(row);
-    host.appendChild(plank);
+    out.appendChild(row);
+    out.appendChild(plank);
   });
+  host.replaceChildren(out);
 }
 
 function renderShop(){
