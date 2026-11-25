@@ -1523,15 +1523,21 @@ const YB_API = "https://api2.yakaboo.ua/api/catalog/vue_storefront_catalog_2/pro
 const YB_IMG = "https://static.yakaboo.ua/media/cloudflare/product/webp/352x340";
 /* категорії Yakaboo → наші жанри; порядок важливий: конкретний жанр перемагає загальний */
 const YB_GENRES = [
-  [/любовн|романтичн/, "Любовний роман"], [/трилер|саспенс/, "Трилер"], [/детектив/, "Детектив"], [/горор|жахи/, "Жахи"],
-  [/фентезі/, "Фентезі"], [/фантастик/, "Фантастика"], [/історичн(ий|і) роман|історична проза/, "Історичний роман"],
-  [/біограф|мемуар/, "Біографія"], [/поезі|вірш/, "Поезія"], [/комікс|манга/, "Комікс"], [/психолог/, "Психологія"],
+  [/любовн(ий|і) роман|романтичн(а|і) проз|ромком/, "Любовний роман"], [/трилер|саспенс/, "Трилер"], [/детектив/, "Детектив"], [/горор|жахи/, "Жахи"],
+  [/^(?!.*фантаст).*фентезі/, "Фентезі"], [/^(?!.*фентезі).*фантаст/, "Фантастика"], [/історичн(ий|і) роман|історична проза/, "Історичний роман"],
+  [/біограф|мемуар/, "Біографія"], [/поезі|вірш|лірик/, "Поезія"], [/комікс|манга/, "Комікс"], [/психолог/, "Психологія"],
   [/саморозвит|мотивац|особистісн/, "Саморозвиток"], [/нон-фікшн|науково-популяр|науп?оп/, "Нон-фікшн"],
-  [/young adult|підлітк/, "Young adult"], [/дитяч/, "Дитяча"], [/класичн/, "Класика"], [/проза/, "Сучасна проза"],
+  [/young adult|підлітк/, "Young adult"], [/дитяч/, "Дитяча"], [/класичн|класика/, "Класика"], [/проза/, "Сучасна проза"],
 ];
+/* жанр з категорій книгарні: підбірки («Добірки Yakaboo», «Часто шукають», авторські) не враховуємо,
+   серед справжніх категорій перемагає найконкретніший жанр (фантастика сильніша за «прозу») */
 function ybGenre(cats){
-  const names = (cats || []).map(c => (c.name || "").toLowerCase()).join(" | ");
-  const hit = YB_GENRES.find(([re]) => re.test(names));
+  cats = cats || [];
+  const curated = new Set(cats.filter(c => /добірк|часто шукають/i.test(c.name || "")).map(c => String(c.category_id)));
+  const names = cats.filter(c => c.name && !curated.has(String(c.parent_id)))
+    .map(c => c.name.toLowerCase())
+    .filter(n => !/default|^книжки$|^художня література$|добірк|часто шукають|екранізац|новинк|бестселер|подарун|хіт|найкращ|:/.test(n));
+  const hit = YB_GENRES.find(([re]) => names.some(n => re.test(n)));
   return hit ? hit[1] : "";
 }
 async function searchYakaboo(q){
@@ -1560,7 +1566,11 @@ async function searchYakaboo(q){
                   genre: ybGenre(s.category), kind, src:"Yakaboo", rank:i};
     const key = normTitle(title) + "|" + normTitle(author);
     const old = groups.get(key);
-    if(!old || (old.kind !== "Паперова" && kind === "Паперова")) groups.set(key, Object.assign(item, {rank: old ? old.rank : i}));
+    if(!old) groups.set(key, item);
+    else {
+      if(old.kind !== "Паперова" && kind === "Паперова") groups.set(key, Object.assign(item, {rank: old.rank, genre: item.genre || old.genre}));
+      else if(!old.genre && item.genre) old.genre = item.genre;
+    }
   });
   /* комплекти й видання латиницею — в кінець, якщо шукаєш кирилицею */
   const score = b => b.rank + (/комплект/i.test(b.title) ? 40 : 0) + (cyr && !/[а-яіїєґ]/i.test(b.title) ? 30 : 0);
