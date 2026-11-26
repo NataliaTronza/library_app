@@ -50,9 +50,38 @@ body.night::before{content:'';position:fixed;inset:0;pointer-events:none;z-index
 html,body{margin:0}
 body{font-family:var(--sans);font-weight:500;color:var(--ink);font-size:15px;line-height:1.45;min-height:100dvh;
   background-color:var(--wall);
-  background-image:repeating-linear-gradient(90deg,transparent 0 34px,var(--wall2) 34px 36px,transparent 36px 40px,var(--wall2) 40px 41px,transparent 41px 76px);
   -webkit-user-select:none;user-select:none;overscroll-behavior-y:contain;transition:background-color .8s ease}
-body.custom-bg{background-image:var(--bgimg);background-size:cover;background-position:center;background-attachment:fixed}
+/* стіна — окремий, «дальній» шар: рейки й стики панелей. Під час прокрутки вона відстає від полиць,
+   а при нахилі телефона зсувається — так зʼявляється глибина */
+#wall{position:fixed;inset:-48px;z-index:-1;pointer-events:none;--seamD:rgba(80,60,30,.08);--seamL:rgba(255,255,255,.5);
+  background-image:linear-gradient(180deg,transparent 0 calc(100% - 3px),var(--seamD) calc(100% - 3px) calc(100% - 2px),var(--seamL) calc(100% - 2px) calc(100% - 1px),transparent calc(100% - 1px)),
+    repeating-linear-gradient(90deg,transparent 0 34px,var(--wall2) 34px 36px,transparent 36px 40px,var(--wall2) 40px 41px,transparent 41px 76px);
+  background-size:100% 340px,auto;will-change:transform}
+body.night #wall{--seamD:rgba(0,0,0,.4);--seamL:rgba(255,255,255,.04)}
+body.custom-bg #wall{background-image:var(--bgimg);background-size:cover;background-position:center}
+/* сонячні зайчики з вікна — удень */
+#sun{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden;mix-blend-mode:soft-light;opacity:0;transition:opacity 1.5s;--sunc:rgba(255,246,220,.95)}
+body.eve #sun{--sunc:rgba(255,186,110,.95)}
+body:not(.night):not(.fx-off) #sun{opacity:1}
+#sun i{position:absolute;top:0;left:0;width:170px;height:220px;border-radius:8px;filter:blur(9px);
+  background:linear-gradient(90deg,var(--sunc) 0 45%,transparent 45% 55%,var(--sunc) 55% 100%);
+  -webkit-mask:linear-gradient(180deg,#000 0 44%,transparent 44% 52%,#000 52% 100%);mask:linear-gradient(180deg,#000 0 44%,transparent 44% 52%,#000 52% 100%);
+  animation:sundrift 150s linear infinite,cloud 23s ease-in-out infinite}
+#sun i:nth-child(1){animation-delay:-20s,-3s}
+#sun i:nth-child(2){animation-delay:-70s,-11s;width:130px;height:170px}
+#sun i:nth-child(3){animation-delay:-118s,-17s;width:190px;height:240px}
+@keyframes sundrift{0%{transform:translate(-60vw,8vh) skewX(-22deg) rotate(-8deg)}100%{transform:translate(110vw,62vh) skewX(-22deg) rotate(-8deg)}}
+@keyframes cloud{0%,100%{opacity:.9}40%{opacity:.45}60%{opacity:.95}}
+@media (prefers-reduced-motion: reduce){#sun i{animation:none}#sun i:nth-child(1){transform:translate(8vw,14vh) skewX(-22deg)}#sun i:nth-child(2){transform:translate(56vw,48vh) skewX(-22deg)}#sun i:nth-child(3){display:none}}
+/* лампа ввечері: тепле коло світла на книжках біля неї, а далі — тінь */
+#shelves{position:relative}
+body.night:not(.fx-off) #shelves{isolation:isolate}
+body.night:not(.fx-off) #shelves::after{content:'';position:absolute;inset:-40px -16px 0;pointer-events:none;z-index:4;mix-blend-mode:soft-light;
+  background:radial-gradient(circle 320px at var(--lx,86%) var(--ly,-300px),rgba(255,206,130,1) 0%,rgba(255,170,90,.6) 42%,rgba(255,150,70,0) 78%);
+  animation:lampglow 7s ease-in-out infinite}
+body.night:not(.fx-off) #shelves::before{content:'';position:absolute;inset:-40px -16px 0;pointer-events:none;z-index:4;mix-blend-mode:multiply;
+  background:radial-gradient(circle 560px at var(--lx,86%) var(--ly,-300px),rgba(10,8,20,0) 30%,rgba(10,8,20,.42) 100%)}
+@keyframes lampglow{0%,100%{opacity:.95}46%{opacity:.78}54%{opacity:1}}
 input,textarea{-webkit-user-select:text;user-select:text;font:inherit;color:inherit}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
 .hidden{display:none!important}
@@ -174,9 +203,9 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .shelf-row{display:flex;align-items:flex-end;gap:10px;padding:0 10px;min-height:132px}
 .plank{height:15px;border-radius:4px;margin-bottom:20px;
   background-image:var(--plankimg,none),linear-gradient(180deg,var(--plank1) 0%,var(--plank2) 55%,var(--plank3) 100%);
-  background-size:cover;background-position:center;box-shadow:0 8px 14px var(--bshadow),inset 0 2px 0 rgba(255,255,255,.2)}
+  background-size:cover;background-position:center;box-shadow:var(--shx,0px) calc(8px + var(--shy,0px)) 14px var(--bshadow),inset 0 2px 0 rgba(255,255,255,.2)}
 .book{width:84px;height:122px;border-radius:2px 6px 6px 2px;flex-shrink:0;cursor:pointer;position:relative;overflow:hidden;
-  box-shadow:2px 3px 9px var(--bshadow),inset 3px 0 0 rgba(0,0,0,.16),inset 6px 0 0 rgba(255,255,255,.15);
+  box-shadow:calc(2px + var(--shx,0px)) calc(3px + var(--shy,0px)) 9px var(--bshadow),inset 3px 0 0 rgba(0,0,0,.16),inset 6px 0 0 rgba(255,255,255,.15);
   transition:transform .22s cubic-bezier(.3,1.3,.4,1);
   display:flex;flex-direction:column;justify-content:space-between;padding:11px 8px 9px 13px}
 .book:active{transform:translateY(-9px) rotate(-1.5deg)}
@@ -192,11 +221,11 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .decor{width:74px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;position:relative;z-index:1;cursor:grab;
   -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .decor img{-webkit-user-drag:none;pointer-events:none}
-.decor svg,.decor img{filter:drop-shadow(1px 3px 3px var(--bshadow))}
+.decor svg,.decor img{filter:drop-shadow(calc(1px + var(--shx,0px)) calc(3px + var(--shy,0px)) 3px var(--bshadow))}
 /* предмет стоїть трохи «вглиб» дошки, а під ним — тінь дотику: так видно, що він спирається на полицю */
 .decor-in{position:relative;display:flex;align-items:flex-end;justify-content:center}
 .decor-sh{position:absolute;left:12%;right:10%;height:9px;bottom:-5px;border-radius:50%;z-index:-1;
-  background:radial-gradient(closest-side,rgba(20,10,4,.55),rgba(20,10,4,.25) 60%,rgba(20,10,4,0))}
+  background:radial-gradient(closest-side,rgba(20,10,4,.55),rgba(20,10,4,.25) 60%,rgba(20,10,4,0));transform:translateX(calc(var(--shx,0px) * .7))}
 .shelf-owl{width:86px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;cursor:pointer}
 .empty-note{color:var(--ink2);font-size:14px;font-weight:600;padding:34px 12px;text-align:center;width:100%}
 
@@ -431,6 +460,157 @@ input[type=date].inp.empty{color:var(--muted)}
 .genre-add .inp{height:42px;font-size:15px}
 .genre-add .btn{height:42px}
 
+/* ═══ плани: є вдома / хочу купити ═══ */
+.book.wish{opacity:.62;filter:saturate(.55);outline:1.5px dashed color-mix(in srgb,var(--ink2) 55%,transparent);outline-offset:2px}
+.bk-tag{position:absolute;left:6px;bottom:8px;z-index:2;padding:2px 6px 2px 9px;background:#fbf3df;color:#6b5230;font-family:var(--mono);font-size:9px;letter-spacing:.06em;
+  border-radius:2px 4px 4px 2px;box-shadow:0 1px 2px rgba(0,0,0,.3);transform:rotate(-6deg);clip-path:polygon(6px 0,100% 0,100% 100%,6px 100%,0 50%)}
+.bk-tag::before{content:'';position:absolute;left:5px;top:50%;width:3px;height:3px;margin-top:-1.5px;border-radius:50%;background:#b8a684}
+.subtabs{display:flex;flex-wrap:wrap;gap:6px;margin:-8px 0 16px}
+.subtabs .chip b{font-family:var(--mono);font-weight:400;font-size:11px;opacity:.8;margin-left:2px}
+.owl-chip{display:inline-flex;align-items:center;gap:5px;margin-left:auto;color:var(--accent-ink);border-style:dashed}
+.now-empty{flex-direction:column;align-items:stretch}
+.now-empty .now-btns{margin-top:10px}
+.now-empty .now-btns .btn{flex:1;gap:6px}
+
+/* ═══ жереб сови ═══ */
+.pick{display:flex;flex-direction:column;align-items:center;padding-top:4px}
+.pick-owl{height:104px;margin-bottom:-6px;position:relative;z-index:1}
+.pick-reel{perspective:500px;height:150px;display:flex;align-items:flex-end;justify-content:center}
+.pick-cover{width:96px;height:140px;border-radius:2px 7px 7px 2px;overflow:hidden;position:relative;box-shadow:3px 8px 16px var(--bshadow);
+  display:flex;align-items:flex-end;padding:8px 7px 8px 11px}
+.pick-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pick-cover span{position:relative;font-family:var(--serif);font-weight:700;font-size:12px;line-height:1.15;color:#fff6e4;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.pick-cover.flick{animation:flick .16s ease-out}
+.pick-cover.landed{animation:pickland .6s cubic-bezier(.2,1.5,.4,1)}
+@keyframes flick{from{transform:rotateY(-70deg) scale(.94);opacity:.4}to{transform:none;opacity:1}}
+@keyframes pickland{0%{transform:rotateY(-90deg) scale(.9)}60%{transform:rotateY(8deg) scale(1.08)}100%{transform:none}}
+.pick-title{font-family:var(--serif);font-weight:700;font-size:20px;line-height:1.2;margin-top:14px;min-height:24px}
+.pick-title small{display:block;font-family:var(--sans);font-size:13px;font-weight:700;color:var(--ink2);margin-top:3px}
+.pick-note{margin-top:6px;font-family:var(--hand);font-size:17px;color:var(--accent-ink)}
+.pick-btns{width:100%;margin-top:14px}
+
+/* ═══ цитати ═══ */
+.lnk{color:var(--accent-ink);font-weight:800;font-size:13px;padding:4px 2px;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+.quotes-box{margin:12px 0 6px}
+.quotes-box .row-sp{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.q{position:relative;margin:8px 0 0;padding:6px 30px 6px 14px;border-left:3px solid color-mix(in srgb,var(--stamp) 60%,transparent);
+  font-family:var(--hand);font-size:17.5px;line-height:1.35;color:var(--ink)}
+.q span::before{content:'«'}.q span::after{content:'»'}
+.q-x{position:absolute;right:0;top:4px;min-width:26px;height:26px;border-radius:7px;color:var(--muted);font-size:17px;line-height:1}
+.q-x.sure{background:var(--stamp);color:#fffaf1;font-size:11.5px;font-weight:800;padding:0 7px}
+.q-empty{margin-top:6px;color:var(--muted)}
+.q-form{margin-top:10px}
+.q-all{display:flex;flex-direction:column;gap:12px;padding-bottom:6px}
+.q-card{margin:0;padding:12px 14px 10px;background:var(--card2);border:1px solid var(--rule);border-radius:10px}
+.q-card blockquote{margin:0;font-family:var(--hand);font-size:19px;line-height:1.35}
+.q-card blockquote::before{content:'«'}.q-card blockquote::after{content:'»'}
+.q-card figcaption{margin-top:6px;font-size:12.5px;color:var(--ink2);font-weight:600}
+#mascotLine.quote{font-size:17px}
+
+/* ═══ книжка виїжджає з полиці ═══ */
+.book.lent{visibility:hidden}
+.fly-book{position:fixed!important;z-index:60;margin:0!important;pointer-events:none;transform-origin:0 0;will-change:transform}
+
+/* ═══ значки ═══ */
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 6px}
+.badge{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:2px}
+.medal{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;color:var(--muted);border:2px dashed var(--rule2);background:var(--card2);flex:none}
+.medal.on{color:#3a2a10;border:0;background:radial-gradient(circle at 35% 30%,#f6e2a8 0%,#d9b25a 45%,#a8822f 100%);
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.28),inset 0 -3px 0 rgba(0,0,0,.18),0 3px 8px var(--bshadow)}
+.medal.sm{width:40px;height:40px}
+.medal.big{width:92px;height:92px}
+.b-name{font-size:12px;font-weight:800;line-height:1.2;color:var(--ink)}
+.badge:not(.on) .b-name{color:var(--ink2)}
+.b-prog{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.badge-big{display:flex;flex-direction:column;align-items:center;padding:4px 4px 0}
+.badge-big h3{font-family:var(--serif);font-size:22px;margin:12px 0 2px}
+.badge-big .medal.on{animation:medalspin .9s cubic-bezier(.2,1.3,.4,1)}
+@keyframes medalspin{from{transform:rotateY(-180deg) scale(.7)}to{transform:none}}
+#badgePop{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));z-index:75;display:flex;align-items:center;gap:10px;
+  width:max-content;max-width:calc(100% - 28px);padding:8px 14px 8px 8px;border-radius:16px;background:var(--card);border:1.5px solid color-mix(in srgb,var(--brass) 60%,transparent);
+  box-shadow:0 14px 30px -10px rgba(0,0,0,.45);transform:translate(-50%,-140%);transition:transform .38s cubic-bezier(.2,1.2,.4,1);cursor:pointer}
+#badgePop.show{transform:translate(-50%,0)}
+#badgePop .medal{animation:none}
+#badgePop.show .medal{animation:medalspin .9s cubic-bezier(.2,1.3,.4,1) .15s both}
+.bp-txt{display:flex;flex-direction:column;min-width:0}
+.bp-txt b{font-family:var(--serif);font-size:16.5px;line-height:1.15}
+.bp-coins{font-family:var(--serif);font-weight:700;color:var(--brass);font-size:17px;margin-left:4px}
+
+/* ═══ читацький рік ═══ */
+.year-banner{display:flex;align-items:center;gap:12px;width:100%;margin-bottom:14px;padding:12px 14px;border-radius:14px;text-align:left;
+  background:linear-gradient(110deg,#22463b,#2f5d4e);color:#fff6e4;box-shadow:var(--shadow)}
+.year-banner.hot{background:linear-gradient(110deg,#4a2c3f,#7a3324 60%,#a8822f)}
+.yb-y{font-family:var(--serif);font-weight:700;font-size:30px;line-height:1}
+.yb-t{flex:1;display:flex;flex-direction:column}
+.yb-t b{font-family:var(--serif);font-style:italic;font-weight:600;font-size:19px}
+.yb-t small{font-size:12px;opacity:.85;font-weight:600}
+.yb-go{font-size:28px;line-height:1;opacity:.8}
+.story{position:fixed;inset:0;z-index:80;background:#111;color:#fff6e4;overflow:hidden;-webkit-user-select:none;user-select:none}
+.st-bars{position:absolute;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top));display:flex;gap:4px;z-index:3}
+.st-bars i{flex:1;height:3px;border-radius:3px;background:rgba(255,246,228,.28);overflow:hidden}
+.st-bars i b{display:block;height:100%;width:0;background:#fff6e4}
+.st-bars i.done b{width:100%}
+.st-bars i.now b{width:100%;animation:stbar .5s ease}
+@keyframes stbar{from{width:0}}
+.st-x{position:absolute;right:10px;top:calc(22px + env(safe-area-inset-top));z-index:4;color:#fff6e4;opacity:.85;padding:6px}
+.st-slide{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;
+  padding:calc(64px + env(safe-area-inset-top)) 26px calc(40px + env(safe-area-inset-bottom));
+  background:var(--bg);background-image:repeating-linear-gradient(90deg,transparent 0 34px,rgba(255,255,255,.035) 34px 36px,transparent 36px 76px)}
+.st-slide.on{display:flex}
+.st-in{opacity:0;animation:stin .6s cubic-bezier(.2,.9,.3,1) forwards}
+.st-in:nth-child(2){animation-delay:.12s}.st-in:nth-child(3){animation-delay:.24s}.st-in:nth-child(4){animation-delay:.36s}
+.st-in:nth-child(5){animation-delay:.48s}.st-in:nth-child(6){animation-delay:.6s}.st-in:nth-child(7){animation-delay:.72s}
+@keyframes stin{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.st-kick{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#e2bd68}
+.st-huge{font-family:var(--serif);font-weight:700;font-size:118px;line-height:.95;letter-spacing:-2px}
+.st-big{font-family:var(--serif);font-style:italic;font-weight:600;font-size:34px;line-height:1.15;margin:0}
+.st-genre{font-size:42px}
+.st-portrait{font-size:25px;line-height:1.3;max-width:340px}
+.st-sub{font-size:15px;font-weight:600;opacity:.9;max-width:330px;margin:0;line-height:1.45}
+.st-hand{font-family:var(--hand);font-size:21px;line-height:1.3;max-width:320px;margin:4px 0 0;opacity:.95}
+.st-hint{position:absolute;bottom:calc(26px + env(safe-area-inset-bottom));font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;opacity:.55;text-transform:uppercase}
+.st-owl{height:150px;margin:6px 0}
+.st-ring{--p:50;width:132px;height:132px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:8px;
+  background:radial-gradient(closest-side,var(--bg) 78%,transparent 79% 100%),conic-gradient(#e2bd68 calc(var(--p)*1%),rgba(255,246,228,.18) 0)}
+.st-ring b{font-family:var(--serif);font-size:34px;line-height:1}
+.st-ring span{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.st-fan{display:flex;justify-content:center;margin-top:14px;height:120px}
+.st-c,.st-g,.st-cover{position:relative;overflow:hidden;border-radius:2px 6px 6px 2px;box-shadow:0 10px 20px rgba(0,0,0,.4);flex:none;
+  display:flex;align-items:flex-end;padding:7px 6px 7px 10px}
+.st-c img,.st-g img,.st-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.st-c img~span,.st-g img~span,.st-cover img~span{display:none}   /* назва — лише коли обкладинки немає */
+.st-c span,.st-g span,.st-cover span{position:relative;font-family:var(--serif);font-weight:700;font-size:10px;line-height:1.15;text-align:left;color:#fff6e4;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.st-c{width:76px;height:112px;margin:0 -10px}
+.st-c:nth-child(1){transform:rotate(-12deg) translateY(10px)}.st-c:nth-child(2){transform:rotate(-6deg) translateY(2px)}
+.st-c:nth-child(4){transform:rotate(6deg) translateY(2px)}.st-c:nth-child(5){transform:rotate(12deg) translateY(10px)}
+.st-c:nth-child(3){z-index:1}
+.st-cover{width:150px;height:220px;margin:8px 0 6px}
+.st-cover span{font-size:15px}
+.st-title{font-family:var(--serif);font-weight:700;font-size:26px;line-height:1.2;max-width:320px}
+.st-stars{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:#e2bd68;margin-top:4px}
+.st-bars-chart{display:flex;align-items:flex-end;gap:5px;height:150px;width:100%;max-width:330px;margin-top:16px}
+.st-bars-chart div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+.st-bars-chart i{display:block;width:100%;border-radius:4px 4px 0 0;background:rgba(255,246,228,.28)}
+.st-bars-chart .on i{background:#e2bd68}
+.st-bars-chart span{font-family:var(--mono);font-size:10px;opacity:.7}
+.st-emoji{font-size:58px;line-height:1}
+.st-meters{width:100%;max-width:300px;display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.st-meters div{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:10px;text-align:left;font-size:13px;font-weight:700}
+.st-meters i{height:8px;border-radius:8px;background:rgba(255,246,228,.18);overflow:hidden}
+.st-meters b{display:block;height:100%;background:#e2bd68;border-radius:8px}
+.st-quote{margin:8px 0 4px;font-family:var(--hand);font-size:25px;line-height:1.35;max-width:340px}
+.st-quote::before{content:'«'}.st-quote::after{content:'»'}
+.st-grid{display:grid;grid-template-columns:repeat(3,74px);gap:10px;justify-content:center;margin:10px 0 6px}
+.st-g{width:74px;height:108px}
+.st-sum{display:flex;gap:20px;justify-content:center;margin-top:6px}
+.st-sum div{display:flex;flex-direction:column;align-items:center}
+.st-sum b{font-family:var(--serif);font-size:32px;line-height:1.05}
+.st-sum b.sm{font-size:19px;font-style:italic;line-height:1.7}
+.st-sum span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.75}
+.st-actions{display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px;margin-top:14px}
+.st-btn{background:#e2bd68;color:#2a2214;box-shadow:none}
+.story .st-btn2{color:#fff6e4;border-color:rgba(255,246,228,.45)}
+
 /* ═══ перетягування книжок ═══ */
 .book{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .book img{-webkit-user-drag:none;pointer-events:none}
@@ -513,6 +693,8 @@ body.dragging,body.dragging *{-webkit-user-select:none;user-select:none;cursor:g
 </style>
 </head>
 <body>
+<div id="wall" aria-hidden="true"></div>
+<div id="sun" aria-hidden="true"><i></i><i></i><i></i></div>
 
 <div id="view">
 
@@ -531,7 +713,7 @@ body.dragging,body.dragging *{-webkit-user-select:none;user-select:none;cursor:g
       <div class="card-hd"><span class="mono">Формуляр читачки</span><span class="mono" id="seasonName">осінь</span></div>
       <div class="hero-top">
         <div class="masc" id="mascotSlot"></div>
-        <div class="bubble"><p id="mascotLine"></p><span class="sig">— <span id="mascotName">Совуня</span></span></div>
+        <div class="bubble"><p id="mascotLine"></p><span class="sig" id="mascotSig">— <span id="mascotName">Совуня</span></span></div>
       </div>
       <div class="lvl">
         <div class="lvl-row">
@@ -552,6 +734,7 @@ body.dragging,body.dragging *{-webkit-user-select:none;user-select:none;cursor:g
     <div id="err" class="err hidden"></div>
     <div class="sec"><h2>Полиця</h2><span class="mono" id="shelfCount"></span></div>
     <div class="tabs" id="tabs"></div>
+    <div class="subtabs hidden" id="subTabs"></div>
     <div id="shelves"></div>
     <button class="btn ghost wide" id="quickAdd" style="margin-top:4px">+ Додати книгу</button>
   </section>
@@ -602,11 +785,21 @@ body.dragging,body.dragging *{-webkit-user-select:none;user-select:none;cursor:g
     </section>
 
     <section class="card">
+      <div class="card-hd"><h3 class="card-ttl">Мої цитати</h3><span class="mono" id="quotesN"></span></div>
+      <div class="small" id="quotesHint"></div>
+      <button class="btn soft sm" id="quotesOpen" style="margin-top:12px">Відкрити цитати</button>
+    </section>
+
+    <section class="card">
       <div class="card-hd"><h3 class="card-ttl">Кольори</h3></div>
       <div class="themes" id="themeGrid"></div>
       <div class="setrow">
         <div><b>Вечір при лампі</b><small>Темна тема сама вмикається з 22:00 до 6:00</small></div>
         <button class="tgl on" id="nightToggle" aria-label="Нічна тема"></button>
+      </div>
+      <div class="setrow">
+        <div><b>Живий інтерʼєр</b><small>Глибина при прокрутці й нахилі телефона, сонячні зайчики вдень, світло лампи ввечері</small></div>
+        <button class="tgl on" id="fxToggle" aria-label="Живий інтерʼєр"></button>
       </div>
     </section>
 
@@ -679,6 +872,7 @@ body.dragging,body.dragging *{-webkit-user-select:none;user-select:none;cursor:g
 
 <div id="modalRoot"></div>
 <div id="toast"></div>
+<div id="badgePop" role="status"></div>
 
 <script>
 /* ═══ ПАЛІТРИ ═══ */
@@ -839,6 +1033,7 @@ const STORAGE_KEY = "library-data-v2";
 let state = {books:[], coins:0, owned:[], placed:[], custom:[], theme:"lamp",
              bgImg:null, plankImg:null, mascotName:DEFAULT_NAME, mascotOn:false, nightTheme:true, gbKey:"", goals:{}, v5:true,
              dateMode:"dates", dragTipSeen:false}; /* customGenres зʼявляється в normalizeState — зі старих жанрів книжок */
+let planSub = "all";   /* у «У планах»: усі / є вдома / хочу купити */
 let filter = "all", saveTimer = null, lineIndex = 0, currentPage = "shelf", statsYear = new Date().getFullYear();
 
 const $ = id => document.getElementById(id);
@@ -868,6 +1063,8 @@ function showErr(msg){
   el.textContent = msg; el.classList.remove("hidden");
 }
 function scheduleSave(){
+  const fresh = checkBadges();
+  if(fresh.length) announceBadges(fresh);
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async ()=>{
     try{
@@ -956,6 +1153,66 @@ async function load(){
   applyTheme(); applyNight(); renderAll(); syncUploadUI();
   heroFxTick();
   if(state.custom.some(it => it.img && !it.trimmed)) trimOldCustomItems();
+  /* значки за вже прочитане — одразу при першому запуску нової версії */
+  const fresh = checkBadges();
+  if(fresh.length){ scheduleSave(); setTimeout(() => announceBadges(fresh), 1400); }
+}
+
+/* ═══ ЖИВИЙ ІНТЕРʼЄР: паралакс, нахил телефона, світло ═══ */
+const FX = {tx:0, ty:0, gx:0, gy:0, base:null, raf:0};
+const fxOn = () => state.fx !== false && motionOK();
+function fxKick(){ if(!FX.raf) FX.raf = requestAnimationFrame(fxFrame); }
+function fxFrame(){
+  FX.raf = 0;
+  const on = fxOn(), gx = on ? FX.gx : 0, gy = on ? FX.gy : 0;
+  FX.tx += (gx - FX.tx) * .12; FX.ty += (gy - FX.ty) * .12;
+  if(Math.abs(gx - FX.tx) < .003) FX.tx = gx;
+  if(Math.abs(gy - FX.ty) < .003) FX.ty = gy;
+  const sy = window.scrollY, wall = $("wall");
+  const mx = -FX.tx * 16, my = -FX.ty * 12;
+  if(document.body.classList.contains("custom-bg")){
+    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    wall.style.backgroundPosition = "";
+    wall.style.transform = "translate3d(" + mx.toFixed(1) + "px," + ((on ? -(sy / max) * 36 : 0) + my).toFixed(1) + "px,0)";
+  } else {
+    /* стіна прокручується на 42% швидкості — «далі» за полиці */
+    wall.style.backgroundPosition = "0 " + (-(sy * (on ? .42 : 1)) % 340).toFixed(1) + "px,0 0";
+    wall.style.transform = "translate3d(" + mx.toFixed(1) + "px," + my.toFixed(1) + "px,0)";
+  }
+  const root = document.documentElement.style;
+  root.setProperty("--shx", (FX.tx * 5).toFixed(2) + "px");
+  root.setProperty("--shy", (FX.ty * 4).toFixed(2) + "px");
+  if(document.body.classList.contains("night") && currentPage === "shelf"){
+    const r = $("shelves").getBoundingClientRect();
+    root.setProperty("--lx", (innerWidth * .86 - r.left + FX.tx * 30).toFixed(0) + "px");
+    root.setProperty("--ly", (-30 - r.top + FX.ty * 24).toFixed(0) + "px");
+  }
+  if(FX.tx !== gx || FX.ty !== gy) fxKick();
+}
+/* нахил: рахуємо відхилення від того, як телефон зазвичай тримають (база повільно підлаштовується) */
+function fxOrient(e){
+  if(e.gamma == null || e.beta == null || !fxOn() || drag) return;
+  const g = e.gamma, b = Math.max(-80, Math.min(80, e.beta));
+  if(!FX.base) FX.base = {g, b};
+  FX.base.g += (g - FX.base.g) * .008; FX.base.b += (b - FX.base.b) * .008;
+  const q = v => Math.round(Math.max(-1, Math.min(1, v / 16)) * 40) / 40;
+  const nx = q(g - FX.base.g), ny = q(b - FX.base.b);
+  if(nx !== FX.gx || ny !== FX.gy){ FX.gx = nx; FX.gy = ny; fxKick(); }
+}
+window.addEventListener("deviceorientation", fxOrient);
+window.addEventListener("scroll", fxKick, {passive:true});
+window.addEventListener("resize", fxKick);
+/* iPhone просить дозвіл на датчик руху — питаємо при першому дотику */
+document.addEventListener("pointerdown", function askMotion(){
+  document.removeEventListener("pointerdown", askMotion);
+  try{ if(window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function" && state.fx !== false) DeviceOrientationEvent.requestPermission().catch(() => {}); }catch(e){}
+});
+function applyFx(){
+  document.body.classList.toggle("fx-off", state.fx === false);
+  const h = new Date().getHours();
+  document.body.classList.toggle("eve", h >= 17 && h < 22);
+  if(!fxOn()){ FX.gx = FX.gy = 0; FX.base = null; }
+  fxKick();
 }
 
 /* ═══ ТЕМА І ВЕЧІР ═══ */
@@ -977,6 +1234,7 @@ let lastNight = null;
 function applyNight(){
   const n = isNight();
   document.body.classList.toggle("night", n);
+  applyFx();
   updateMetaColor();
   if(lastNight !== null && lastNight !== n){ renderHero(true); renderStats(); }
   lastNight = n;
@@ -988,7 +1246,7 @@ function updateMetaColor(){
 setInterval(applyNight, 60000);
 
 /* ═══ МАЛЮВАННЯ ═══ */
-function renderAll(){ renderHero(); renderNow(); renderTabs(); renderShelves(); renderShop(); renderThemes(); renderMascotSettings(); renderGenreSettings(); renderStats(); }
+function renderAll(){ renderHero(); renderNow(); renderTabs(); renderShelves(); renderShop(); renderThemes(); renderMascotSettings(); renderGenreSettings(); renderQuotesCard(); renderStats(); }
 
 function readThisYear(){
   const y = new Date().getFullYear();
@@ -1011,6 +1269,13 @@ function mascotLines(){
   const lastRated = state.books.filter(b=>b.status==="read" && b.rating && b.readAt).sort((a,b)=>b.readAt.localeCompare(a.readAt))[0];
   if(lastRated) out.push({mood:"idle", line:"«" + short(lastRated.title) + "» — " + lastRated.rating + " з 10. " + (lastRated.rating >= 9 ? "Записала в золотий фонд." : lastRated.rating <= 4 ? "Не все ж бути шедеврами." : "Чесна оцінка.")});
   out.push({mood: nowReading.length ? "read" : "idle", line:SEASON_LINES[season()]});
+  /* сова пригадує одну з твоїх цитат (щодня іншу) */
+  const qs = allQuotes();
+  if(qs.length){
+    const {q, b} = qs[(Math.floor(Date.now() / 864e5) + lineIndex) % qs.length];
+    const t = q.t.length > 140 ? q.t.slice(0, 138).trim() + "…" : q.t;
+    out.splice(1, 0, {mood:"read", line:"«" + t + "»", sig:"«" + short(b.title) + "», з твоїх цитат"});
+  }
   if(planned && read) out.push({mood:"idle", line:"У планах " + planned + ". Що візьмемо наступною?"});
   out.push({mood:"idle", line:"Ще одна книжка — і полиця стане гарнішою."});
   if(isNight()) return out;
@@ -1050,6 +1315,8 @@ function renderHero(force){
   const lines = mascotLines();
   const m = lines[lineIndex % lines.length];
   $("mascotLine").textContent = m.line;
+  $("mascotLine").classList.toggle("quote", !!m.sig);
+  $("mascotSig").innerHTML = m.sig ? esc(m.sig) : '— <span id="mascotName"></span>';
   document.querySelectorAll("#mascotName,.mname").forEach(e => e.textContent = state.mascotName);
   const key = season() + "|" + m.mood;
   if(force || key !== heroOwlKey || !$("mascotSlot").firstChild){
@@ -1076,6 +1343,16 @@ function renderTabs(){
   $("tabs").innerHTML = defs.map(([k,label]) =>
     '<button class="tab '+(filter===k?"on":"")+'" data-f="'+k+'">'+label+'<b>'+c[k]+'</b></button>').join("");
   $("tabs").querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ filter = b.dataset.f; renderTabs(); renderShelves(); });
+  const sub = $("subTabs");
+  if(filter === "planned" && c.planned){
+    const home = state.books.filter(b => b.status === "planned" && b.own !== "buy").length, buy = c.planned - home;
+    sub.classList.remove("hidden");
+    sub.innerHTML = [["all","Усі",c.planned],["home","Є вдома",home],["buy","Хочу купити",buy]].map(([k,l,n]) =>
+      '<button class="chip'+(planSub===k?" on":"")+'" data-ps="'+k+'">'+l+' <b>'+n+'</b></button>').join("")
+      + '<button class="chip owl-chip" id="owlPickChip">'+OWL_DICE+' Сова, обери</button>';
+    sub.querySelectorAll("[data-ps]").forEach(b => b.onclick = () => { planSub = b.dataset.ps; renderTabs(); renderShelves(); });
+    $("owlPickChip").onclick = openOwlPick;
+  } else { sub.classList.add("hidden"); sub.innerHTML = ""; }
   const n = state.books.length;
   $("shelfCount").textContent = n ? n + " " + plural(n,"книга","книги","книг") : "";
 }
@@ -1114,16 +1391,18 @@ function fitCover(el, b, maxW, maxH){
 function bookEl(b){
   const el = document.createElement("div");
   const cov = bookCover(b);
-  el.className = "book" + (cov ? " has-cover" : "") + (b.status !== "read" ? " badged" : "");
+  const wish = b.status === "planned" && b.own === "buy";
+  el.className = "book" + (cov ? " has-cover" : "") + (b.status !== "read" ? " badged" : "") + (wish ? " wish" : "");
   const c = coverColor(b);
   el.style.background = "linear-gradient(100deg,"+c+" 0%,"+c+" 78%,rgba(0,0,0,.28) 100%)";
   el.innerHTML = (cov ? '<img src="'+cov+'" alt="" onerror="this.parentNode.classList.remove(\'has-cover\');this.parentNode.style.width=\'\';this.parentNode.style.height=\'\';this.remove()">' : "")
     + '<div class="bk-title">'+esc(b.title)+'</div><div class="bk-author">'+esc(b.author||"")+'</div>'
-    + (b.status === "reading" ? '<span class="bk-flag reading" title="Читаю"></span>' : b.status === "planned" ? '<span class="bk-flag" title="У планах"></span>' : "");
+    + (b.status === "reading" ? '<span class="bk-flag reading" title="Читаю"></span>' : b.status === "planned" && !wish ? '<span class="bk-flag" title="У планах"></span>' : "")
+    + (wish ? '<span class="bk-tag">купити</span>' : "");
   if(cov) fitCover(el, b, 84, 122);
   el.dataset.id = b.id;
   el.dataset.tok = "b:" + b.id;
-  el.onclick = () => { if(Date.now() - dragEndedAt < 450) return; openDetail(b.id); };
+  el.onclick = () => { if(Date.now() - dragEndedAt < 450) return; openDetail(b.id, el); };
   el.addEventListener("pointerdown", e => dragPointerDown(e, el, "b:" + b.id));
   el.addEventListener("contextmenu", e => e.preventDefault());
   return el;
@@ -1359,7 +1638,11 @@ function renderShelves(){
   const slots = [];
   state.shelf.forEach(t => {
     const id = t.slice(2);
-    if(t[0] === "b"){ const b = byId[id]; if(b && (filter === "all" || b.status === filter)) slots.push({type:"book", data:b, tok:t}); }
+    if(t[0] === "b"){
+      const b = byId[id];
+      if(b && (filter === "all" || b.status === filter) && (filter !== "planned" || planSub === "all" || (planSub === "buy") === (b.own === "buy")))
+        slots.push({type:"book", data:b, tok:t});
+    }
     else if(items[id]) slots.push({type:"decor", data:items[id], tok:t});
   });
   const nBooks = slots.filter(x => x.type === "book").length;
@@ -1453,6 +1736,7 @@ function renderThemes(){
     + '</div><span>'+t.name+'</span></div>').join("");
   $("themeGrid").querySelectorAll("[data-theme]").forEach(el=>el.onclick=()=>{ state.theme = el.dataset.theme; applyTheme(); renderThemes(); scheduleSave(); });
   $("nightToggle").classList.toggle("on", state.nightTheme !== false);
+  $("fxToggle").classList.toggle("on", state.fx !== false);
 }
 
 function renderMascotSettings(){
@@ -1474,6 +1758,7 @@ $("mascotNameInput").oninput = e => {
 $("mascotNameInput").onblur = () => renderHero();
 $("mascotToggle").onclick = ()=>{ state.mascotOn = !state.mascotOn; renderMascotSettings(); renderShelves(); scheduleSave(); };
 $("nightToggle").onclick = ()=>{ state.nightTheme = state.nightTheme === false; applyNight(); renderThemes(); renderHero(true); scheduleSave(); };
+$("fxToggle").onclick = ()=>{ state.fx = state.fx === false; applyFx(); renderThemes(); scheduleSave(); };
 /* ═══ МОЇ ЖАНРИ ═══ */
 function renderGenreSettings(){
   const box = $("myGenres"); if(!box) return;
@@ -1508,13 +1793,14 @@ function addGenreFromSettings(){
   else toast("«" + g + "» вже є у списку");
 }
 $("genreSetAdd").onclick = addGenreFromSettings;
+$("quotesOpen").onclick = openQuotes;
 $("genreSetInp").onkeydown = e => { if(e.key === "Enter"){ e.preventDefault(); addGenreFromSettings(); } };
 
 $("gbKey").oninput = e => { state.gbKey = e.target.value.trim(); scheduleSave(); };
 $("gbKey").onblur = () => renderMascotSettings();
 
 /* ═══ ЗАРАЗ ЧИТАЮ ═══ */
-const MINI_BOX = {"now-cover":[60,88], "tb-c":[36,52]};
+const MINI_BOX = {"now-cover":[60,88], "tb-c":[36,52], "pick-cover":[96,140]};
 function miniCover(b, cls){
   const cov = bookCover(b), c = coverColor(b), box = MINI_BOX[cls];
   return '<div class="'+cls+'" style="'+(box ? coverSizeCSS(b, box[0], box[1]) : '')+'background:linear-gradient(100deg,'+c+' 0%,'+c+' 78%,rgba(0,0,0,.28) 100%)">'
@@ -1527,9 +1813,12 @@ function renderNow(){
   if(!list.length){
     if(!planned){ box.classList.add("hidden"); return; }
     box.classList.remove("hidden");
-    box.innerHTML = '<div class="now-empty"><div><div class="mono">Зараз читаю</div><div class="small" style="margin-top:3px">Нічого. У планах ' + planned + ' ' + plural(planned,"книга","книги","книг") + ' — вибереш наступну?</div></div>'
-      + '<button class="btn soft sm" id="pickNext">Вибрати</button></div>';
-    $("pickNext").onclick = () => { filter = "planned"; renderTabs(); renderShelves(); document.querySelector(".sec").scrollIntoView({behavior:"smooth"}); };
+    const home = state.books.filter(b => b.status === "planned" && b.own !== "buy").length;
+    box.innerHTML = '<div class="now-empty"><div><div class="mono">Зараз читаю</div><div class="small" style="margin-top:3px">Нічого. У планах ' + planned + ' ' + plural(planned,"книга","книги","книг")
+      + (home && home < planned ? ', з них удома ' + home : '') + ' — що далі?</div></div>'
+      + '<div class="now-btns"><button class="btn sm" id="owlPickNow">'+OWL_DICE+' '+(state.mascotName.length <= 9 ? esc(state.mascotName) : "Сова")+', обери</button><button class="btn ghost sm" id="pickNext">Сама виберу</button></div></div>';
+    $("owlPickNow").onclick = openOwlPick;
+    $("pickNext").onclick = () => { filter = "planned"; planSub = "all"; renderTabs(); renderShelves(); document.querySelector(".sec").scrollIntoView({behavior:"smooth"}); };
     return;
   }
   box.classList.remove("hidden");
@@ -1674,14 +1963,20 @@ function renderStats(){
     }
   }
 
+  if(statsYear !== "all" && books.length){
+    const hot = (new Date().getMonth() === 11 && statsYear === curY) || (new Date().getMonth() === 0 && statsYear === curY - 1) || statsYear < curY;
+    h = '<button class="year-banner' + (hot ? ' hot' : '') + '" id="yearStory"><span class="yb-y">' + statsYear + '</span><span class="yb-t"><b>Читацький рік</b><small>'
+      + (statsYear < curY || hot ? "Підсумки: книжка року, жанр, твій портрет" : "Підсумки поки що — рік ще триває") + '</small></span><span class="yb-go">›</span></button>' + h;
+  }
   if(!books.length){
     body.innerHTML = h + '<section class="card stat-empty"><div id="statOwl" style="display:flex;justify-content:center"></div>'
       + '<p>'+(statsYear === "all" ? "Ще жодної прочитаної книжки. Перша — найважливіша!" : readAll.length ? "У " + statsYear + " поки жодної книжки з датою." : "У " + statsYear + " ще нічого не прочитано. Почнемо?")+'</p>'
       + (statsYear !== "all" && readAll.length ? '<button class="btn soft sm" id="toAllYears">Усі роки · ' + readAll.length + ' ' + plural(readAll.length,"книга","книги","книг") + '</button>' : '')
-      + '</section>';
+      + '</section>' + badgesSection();
     if($("toAllYears")) $("toAllYears").onclick = () => { statsYear = "all"; statsSel = {month:null, genre:null}; renderStats(); };
     $("statOwl").appendChild(owlEl({h:110, mood:"sleep"}));
     if($("goalEdit")) $("goalEdit").onclick = openGoal;
+    body.querySelectorAll("[data-badge]").forEach(el => el.onclick = () => openBadge(el.dataset.badge));
     return;
   }
 
@@ -1798,11 +2093,354 @@ function renderStats(){
       + facts.map(([k,v]) => '<div class="fld"><span>'+k+'</span><i></i><b>'+esc(v)+'</b></div>').join("") + '</section>';
   }
 
-  body.innerHTML = h;
+  body.innerHTML = h + badgesSection();
   if($("goalEdit")) $("goalEdit").onclick = openGoal;
+  if($("yearStory")) $("yearStory").onclick = () => openYearStory(statsYear);
   body.querySelectorAll("#monthsBox .hit").forEach(r => r.onclick = () => { const m = +r.dataset.m; statsSel.month = statsSel.month === m ? null : m; renderStats(); });
   body.querySelectorAll("#donutBox .seg, .legend .lg").forEach(el => el.onclick = () => { const g = el.dataset.g; statsSel.genre = statsSel.genre === g ? null : g; renderStats(); });
   body.querySelectorAll("[data-open]").forEach(el => el.onclick = () => openDetail(el.dataset.open));
+  body.querySelectorAll("[data-badge]").forEach(el => el.onclick = () => openBadge(el.dataset.badge));
+}
+
+/* ═══ ЗНАЧКИ ═══
+   Відкриваються самі, щойно умова виконана; за кожен — бонусні монети. */
+const BI = {
+  book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3Z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
+  stack:'<rect x="4" y="15" width="16" height="4.5" rx="1"/><rect x="6" y="10" width="13" height="4.5" rx="1"/><rect x="5" y="5" width="14" height="4.5" rx="1"/>',
+  shelf:'<path d="M3 20.5h18M3 13h18"/><path d="M6 13V5.5M9.5 13V7M13 13V4.5M16.5 13l2.2-7M6.5 20.5V15.5M10.5 20.5V16"/>',
+  crown:'<path d="M3.5 8.5l4.2 3.8L12 5.5l4.3 6.8 4.2-3.8-2 10.5h-13Z"/>',
+  calendar:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14.5h1.5M11.5 14.5H13M15 14.5h1.5"/>',
+  target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
+  compass:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5Z"/>',
+  heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/>',
+  star:'<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9Z"/>',
+  sparkle:'<path d="M12 3c.8 4.6 2.4 6.2 7 7-4.6.8-6.2 2.4-7 7-.8-4.6-2.4-6.2-7-7 4.6-.8 6.2-2.4 7-7Z"/><path d="M19 16.5v4M17 18.5h4"/>',
+  quote:'<path d="M10 7H6.5A2.5 2.5 0 0 0 4 9.5V13h6Zm0 6c0 3.2-1.6 4.8-4.5 5.5M20 7h-3.5A2.5 2.5 0 0 0 14 9.5V13h6Zm0 6c0 3.2-1.6 4.8-4.5 5.5"/>',
+  moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/>',
+  bolt:'<path d="M13 3 5 13.5h6L10 21l8-10.5h-6Z"/>',
+  cup:'<path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5Z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8.5 3c0 1.5 1.5 1.5 1.5 3.2M12 3c0 1.5 1.5 1.5 1.5 3.2"/>',
+  candle:'<path d="M9 10.5h6V21H9Z"/><path d="M12 10.5V8.5"/><path d="M12 3c1.6 1.8 1.6 3.4 0 4.6-1.6-1.2-1.6-2.8 0-4.6Z"/><path d="M6 21h12"/>',
+  bag:'<path d="M4 8h16l-1.4 12a2 2 0 0 1-2 1.8H7.4a2 2 0 0 1-2-1.8Z"/><path d="M8.5 8a3.5 3.5 0 0 1 7 0"/>'
+};
+const badgeIcon = (k, size) => '<svg width="'+(size||26)+'" height="'+(size||26)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(BI[k]||BI.book)+'</svg>';
+const BADGES = [
+  {id:"first",   name:"Перша прочитана",     desc:"Прочитати першу книжку",               coins:10, icon:"book",     goal:1,  v:s=>s.read},
+  {id:"five",    name:"Пʼятірка",            desc:"5 прочитаних книжок",                  coins:15, icon:"stack",    goal:5,  v:s=>s.read},
+  {id:"ten",     name:"Десятка",             desc:"10 прочитаних книжок",                 coins:20, icon:"stack",    goal:10, v:s=>s.read},
+  {id:"q25",     name:"Чверть сотні",        desc:"25 прочитаних книжок",                 coins:30, icon:"shelf",    goal:25, v:s=>s.read},
+  {id:"fifty",   name:"Півсотні",            desc:"50 прочитаних книжок",                 coins:50, icon:"crown",    goal:50, v:s=>s.read},
+  {id:"month3",  name:"Книжковий місяць",    desc:"3 книжки за один місяць",              coins:20, icon:"calendar", goal:3,  v:s=>s.maxMonth},
+  {id:"goal",    name:"Слово тримаю",        desc:"Виконати мету на рік",                 coins:30, icon:"target",   goal:1,  v:s=>s.goalsMet},
+  {id:"genres5", name:"Жанрова мандрівниця", desc:"Книжки пʼяти різних жанрів",           coins:15, icon:"compass",  goal:5,  v:s=>s.genres},
+  {id:"loyal",   name:"Вірність жанру",      desc:"5 книжок одного жанру",                coins:15, icon:"heart",    goal:5,  v:s=>s.maxGenre},
+  {id:"critic",  name:"Критикиня",           desc:"Оцінити 10 книжок",                    coins:15, icon:"star",     goal:10, v:s=>s.rated},
+  {id:"master",  name:"Шедевр",              desc:"Поставити книжці 10 з 10",             coins:10, icon:"sparkle",  goal:1,  v:s=>s.tens},
+  {id:"quotes",  name:"Цитатниця",           desc:"Зберегти 10 цитат",                    coins:15, icon:"quote",    goal:10, v:s=>s.quotes},
+  {id:"night",   name:"Нічна сова",          desc:"Дочитати книжку після 22:00",          coins:10, icon:"moon",     goal:1,  v:s=>s.night},
+  {id:"fast",    name:"На одному подиху",    desc:"Прочитати книжку за 3 дні чи швидше",  coins:10, icon:"bolt",     goal:1,  v:s=>s.fast},
+  {id:"slow",    name:"Slow days",           desc:"Читати одну книжку понад 2 місяці",    coins:10, icon:"cup",      goal:1,  v:s=>s.slow},
+  {id:"cozy",    name:"Затишна полиця",      desc:"Поставити на полицю 3 предмети",       coins:10, icon:"candle",   goal:3,  v:s=>s.decor},
+  {id:"bought",  name:"Нова покупка",        desc:"Купити книжку зі списку «Хочу купити»",coins:10, icon:"bag",      goal:1,  v:s=>s.bought},
+];
+function badgeStats(){
+  const read = state.books.filter(b => b.status === "read");
+  const mx = o => Math.max(0, ...Object.values(o));
+  const months = {}, gc = {}, years = {};
+  read.forEach(b => {
+    if(b.readAt){ const d = new Date(b.readAt), k = d.getFullYear() + "-" + d.getMonth(); months[k] = (months[k] || 0) + 1; }
+    bookTags(b).forEach(g => gc[g] = (gc[g] || 0) + 1);
+    const y = readYear(b); if(y) years[y] = (years[y] || 0) + 1;
+  });
+  const dur = b => (b.startedAt && b.readAt) ? Math.max(1, dayDiff(b.startedAt, b.readAt) + 1) : null;
+  return {
+    read: read.length, maxMonth: mx(months), genres: Object.keys(gc).length, maxGenre: mx(gc),
+    goalsMet: Object.entries(state.goals || {}).filter(([y, g]) => g > 0 && (years[y] || 0) >= g).length,
+    rated: read.filter(b => b.rating).length, tens: read.filter(b => b.rating === 10).length,
+    quotes: allQuotes().length,
+    night: read.filter(b => { if(!b.readAt) return false; const h = new Date(b.readAt).getHours(); return h >= 22 || h < 5; }).length,
+    fast: read.filter(b => { const d = dur(b); return d && d <= 3; }).length,
+    slow: read.filter(b => { const d = dur(b); return d && d > 61; }).length,
+    decor: state.placed.length,
+    bought: state.books.filter(b => b.boughtAt).length,
+  };
+}
+/* перевіряє умови; нові значки записує й нараховує монети */
+function checkBadges(){
+  if(!state.badges || typeof state.badges !== "object") state.badges = {};
+  const st = badgeStats(), fresh = [];
+  BADGES.forEach(bd => {
+    if(state.badges[bd.id] || bd.v(st) < bd.goal) return;
+    state.badges[bd.id] = new Date().toISOString();
+    state.coins = (state.coins || 0) + bd.coins;
+    fresh.push(bd);
+  });
+  return fresh;
+}
+let badgeQueue = [], badgeShowing = false;
+function announceBadges(fresh){
+  if(!fresh.length) return;
+  renderHero(); renderShop();
+  if(currentPage === "stats") renderStats();
+  if(fresh.length > 2){
+    const sum = fresh.reduce((a, b) => a + b.coins, 0);
+    badgeQueue.push({icon:"sparkle", kick:"Нові значки", name:"Відкрито " + fresh.length + " " + plural(fresh.length,"значок","значки","значків"), coins:sum});
+  } else fresh.forEach(bd => badgeQueue.push({icon:bd.icon, kick:"Новий значок", name:bd.name, coins:bd.coins}));
+  nextBadgePop();
+}
+function nextBadgePop(){
+  if(badgeShowing || !badgeQueue.length) return;
+  badgeShowing = true;
+  const b = badgeQueue.shift(), el = $("badgePop");
+  el.innerHTML = '<span class="medal on sm">' + badgeIcon(b.icon, 22) + '</span><span class="bp-txt"><span class="mono">' + b.kick + '</span><b>' + esc(b.name) + '</b></span><span class="bp-coins">+' + b.coins + ' ◈</span>';
+  el.classList.add("show");
+  el.onclick = () => { el.classList.remove("show"); setPage("stats"); setTimeout(() => { const c = $("badgesCard"); if(c) c.scrollIntoView({behavior:"smooth", block:"start"}); }, 120); };
+  setTimeout(() => { el.classList.remove("show"); setTimeout(() => { badgeShowing = false; nextBadgePop(); }, 380); }, 3400);
+}
+function badgesSection(){
+  const st = badgeStats(), got = state.badges || {};
+  const n = BADGES.filter(bd => got[bd.id]).length;
+  return '<section class="card" id="badgesCard"><div class="card-hd"><h3 class="card-ttl">Значки</h3><span class="mono">' + n + ' з ' + BADGES.length + '</span></div>'
+    + '<div class="badges">' + BADGES.map(bd => {
+        const on = !!got[bd.id], cur = Math.min(bd.goal, bd.v(st));
+        return '<button class="badge' + (on ? ' on' : '') + '" data-badge="' + bd.id + '"><span class="medal' + (on ? ' on' : '') + '">' + badgeIcon(bd.icon) + '</span>'
+          + '<span class="b-name">' + bd.name + '</span>'
+          + (on ? '' : '<span class="b-prog">' + (bd.goal > 1 ? cur + ' / ' + bd.goal : 'ще ні') + '</span>') + '</button>';
+      }).join("") + '</div></section>';
+}
+function openBadge(id){
+  const bd = BADGES.find(x => x.id === id); if(!bd) return;
+  const on = state.badges && state.badges[id], cur = Math.min(bd.goal, bd.v(badgeStats()));
+  openSheet('<div class="badge-big"><span class="medal big' + (on ? ' on' : '') + '">' + badgeIcon(bd.icon, 40) + '</span>'
+    + '<h3>' + bd.name + '</h3><p class="small">' + bd.desc + '</p>'
+    + (on ? '<div class="mono" style="margin-top:8px">відкрито ' + dotDate(on) + ' · +' + bd.coins + ' ◈</div>'
+          : '<div class="goal-bar" style="margin:14px 0 6px"><i style="width:' + (cur / bd.goal * 100) + '%"></i></div><div class="mono">' + cur + ' з ' + bd.goal + ' · нагорода +' + bd.coins + ' ◈</div>')
+    + '<button class="btn soft wide" id="badgeOk" style="margin-top:16px">Добре</button></div>', true);
+  $("badgeOk").onclick = closeModal;
+}
+
+/* ═══ ЧИТАЦЬКИЙ РІК ═══
+   Сторіз-підсумки року: тап праворуч — далі, ліворуч — назад. Наприкінці — картинка, щоб поділитися. */
+const MONTHS_IN = ["січні","лютому","березні","квітні","травні","червні","липні","серпні","вересні","жовтні","листопаді","грудні"];
+const READER_TYPES = {
+  cozy:"Ти — збирачка затишку. Твої книжки цьогоріч були як плед і гарячий чай.",
+  tense:"Ти любиш, коли серце калатає. Цьогоріч було напружено — і тобі це подобалось.",
+  emo:"Ти читаєш серцем. Цьогорічні книжки зачіпали за живе.",
+  funny:"З тобою весело читати: найчастіше книжки тебе смішили.",
+  spicy:"Цьогоріч у твоїх книжках було гаряче. Совуня червоніє й мовчить."
+};
+function yearData(y){
+  const books = state.books.filter(b => b.status === "read" && readYear(b) === y);
+  const dated = books.filter(b => b.readAt);
+  const months = Array(12).fill(0);
+  dated.forEach(b => months[new Date(b.readAt).getMonth()]++);
+  const mx = Math.max(0, ...months), bestM = mx ? months.indexOf(mx) : -1;
+  const gc = {}; books.forEach(b => bookTags(b).forEach(g => gc[g] = (gc[g] || 0) + 1));
+  const genres = Object.entries(gc).sort((a, b) => b[1] - a[1]);
+  const ac = {}; books.forEach(b => { if(b.author) ac[b.author] = (ac[b.author] || 0) + 1; });
+  const favAuthor = Object.entries(ac).sort((a, b) => b[1] - a[1])[0];
+  const rated = books.filter(b => b.rating).sort((a, b) => b.rating - a.rating || String(b.readAt || "").localeCompare(String(a.readAt || "")));
+  const withT = books.filter(b => b.traits && Object.keys(b.traits).length);
+  const moods = TRAITS.filter(t => t.g === "m").map(t => { const v = withT.map(b => b.traits[t.k]).filter(Boolean); return {t, v: v.length ? avg(v) : 0}; }).filter(x => x.v > 0).sort((a, b) => b.v - a.v);
+  const quotes = [];
+  books.forEach(b => quotesOf(b).forEach(q => quotes.push({q, b})));
+  const curY = new Date().getFullYear();
+  const days = y < curY ? (new Date(y + 1, 0, 1) - new Date(y, 0, 1)) / 864e5 : y === curY ? Math.max(1, (Date.now() - new Date(y, 0, 1)) / 864e5) : 365;
+  const badges = BADGES.filter(bd => state.badges && state.badges[bd.id] && new Date(state.badges[bd.id]).getFullYear() === y);
+  return {y, books, dated, months, mx, bestM, genres, favAuthor, rated, moods, quotes, goal: state.goals[y], days, badges, finished: y < curY};
+}
+function storyCover(b, cls){
+  const cov = bookCover(b), c = coverColor(b);
+  return '<div class="'+cls+'" style="background:linear-gradient(100deg,'+c+' 0%,'+c+' 78%,rgba(0,0,0,.28) 100%)">'
+    + (cov ? '<img src="'+cov+'" alt="" onerror="this.remove()">' : '') + '<span>'+esc(b.title)+'</span></div>';
+}
+function yearSlides(d){
+  const n = d.books.length, S = [];
+  const nb = (k) => plural(k, "книжку", "книжки", "книжок");
+  S.push({bg:"#22463b", html:
+    '<div class="st-kick st-in">читацький рік</div><div class="st-huge st-in">' + d.y + '</div>'
+    + '<div class="st-owl st-in" id="stOwl"></div>'
+    + '<p class="st-hand st-in">' + (d.finished ? "Згадаймо, яким він був у книжках." : "Подивимось, яким він видався в книжках — поки що.") + '</p>'
+    + '<div class="st-hint st-in">торкнись праворуч, щоб гортати</div>'});
+  const every = n ? Math.max(1, Math.round(d.days / n)) : 0;
+  let goalHtml = "";
+  if(d.goal){
+    const pct = Math.min(100, Math.round(n / d.goal * 100));
+    goalHtml = '<div class="st-ring st-in" style="--p:' + pct + '"><b>' + pct + '%</b><span>мети</span></div>'
+      + '<p class="st-sub st-in">' + (n >= d.goal ? 'Мету «' + d.goal + '» виконано. Слово тримаєш!' : 'Мета — ' + d.goal + '. ' + (d.finished ? 'Наступного разу точно.' : 'Ще є час!')) + '</p>';
+  }
+  S.push({bg:"#4a2c3f", html:
+    '<div class="st-kick st-in">ти прочитала</div><div class="st-huge st-in" data-count="' + n + '">' + n + '</div>'
+    + '<div class="st-big st-in">' + nb(n) + '</div>' + goalHtml
+    + (n > 1 ? '<p class="st-hand st-in">Це приблизно одна книжка кожні ' + every + ' ' + plural(every, "день", "дні", "днів") + '.</p>' : '')
+    + '<div class="st-fan st-in">' + d.books.slice(0, 5).map(b => storyCover(b, "st-c")).join("") + '</div>'});
+  if(d.dated.length >= 2 && d.bestM >= 0){
+    S.push({bg:"#1f3550", html:
+      '<div class="st-kick st-in">найчитабельніший місяць</div><div class="st-big st-in">' + MONTHS_FULL[d.bestM] + '</div>'
+      + '<p class="st-sub st-in">' + d.mx + ' ' + plural(d.mx, "книжка", "книжки", "книжок") + ' — у ' + MONTHS_IN[d.bestM] + ' ти читала найбільше.</p>'
+      + '<div class="st-bars-chart st-in">' + d.months.map((v, i) => '<div class="' + (i === d.bestM ? "on" : "") + '"><i style="height:' + (d.mx ? Math.max(v ? 8 : 3, v / d.mx * 100) : 3) + '%"></i><span>' + MONTHS_SHORT[i][0].toUpperCase() + '</span></div>').join("") + '</div>'});
+  }
+  if(d.genres.length){
+    const [g, c] = d.genres[0];
+    S.push({bg:"#7a3324", html:
+      '<div class="st-kick st-in">жанр року</div><div class="st-big st-genre st-in">' + esc(g) + '</div>'
+      + '<p class="st-sub st-in">' + c + ' ' + plural(c, "книжка", "книжки", "книжок") + (d.genres.length > 1 ? '. А ще: ' + d.genres.slice(1, 4).map(x => esc(x[0].toLowerCase())).join(", ") + '.' : '.') + '</p>'
+      + (d.favAuthor && d.favAuthor[1] > 1 ? '<p class="st-hand st-in">Найчастіше поверталась до автора: ' + esc(d.favAuthor[0]) + ' (' + d.favAuthor[1] + ').</p>' : '')});
+  }
+  if(d.rated.length){
+    const b = d.rated[0];
+    S.push({bg:"#6b5420", html:
+      '<div class="st-kick st-in">книжка року</div>' + storyCover(b, "st-cover st-in")
+      + '<div class="st-title st-in">«' + esc(b.title) + '»</div>' + (b.author ? '<div class="st-sub st-in">' + esc(b.author) + '</div>' : '')
+      + '<div class="st-stars st-in">' + b.rating + ' / 10 · ' + RATE_WORDS[b.rating] + '</div>'});
+  }
+  if(d.moods.length){
+    const top = d.moods[0];
+    S.push({bg:"#2d3a2e", html:
+      '<div class="st-kick st-in">твій читацький портрет</div><div class="st-emoji st-in">' + top.t.e + '</div>'
+      + '<p class="st-big st-portrait st-in">' + READER_TYPES[top.t.k] + '</p>'
+      + '<div class="st-meters st-in">' + d.moods.slice(0, 4).map(x => '<div><span>' + x.t.n + '</span><i><b style="width:' + (x.v / 5 * 100) + '%"></b></i></div>').join("") + '</div>'});
+  }
+  if(d.quotes.length){
+    const {q, b} = d.quotes[Math.floor(Math.random() * d.quotes.length)];
+    S.push({bg:"#1d1b17", html:
+      '<div class="st-kick st-in">рядок року</div><blockquote class="st-quote st-in">' + esc(q.t.length > 260 ? q.t.slice(0, 258).trim() + "…" : q.t) + '</blockquote>'
+      + '<div class="st-sub st-in">«' + esc(b.title) + '»' + (b.author ? ' · ' + esc(b.author) : '') + '</div>'});
+  }
+  S.push({bg:"#22463b", final:true, html:
+    '<div class="st-kick st-in">мій ' + d.y + ' у книжках</div>'
+    + '<div class="st-grid st-in">' + d.books.slice(0, 9).map(b => storyCover(b, "st-g")).join("") + '</div>'
+    + '<div class="st-sum st-in"><div><b>' + n + '</b><span>' + plural(n, "книжка", "книжки", "книжок") + '</span></div>'
+    + (d.genres.length ? '<div><b class="sm">' + esc(d.genres[0][0]) + '</b><span>жанр року</span></div>' : '')
+    + (d.badges.length ? '<div><b>' + d.badges.length + '</b><span>' + plural(d.badges.length, "значок", "значки", "значків") + '</span></div>' : '') + '</div>'
+    + '<div class="st-actions st-in"><button class="btn st-btn" id="stShare">Поділитися картинкою</button><button class="btn ghost st-btn2" id="stSave">Зберегти в телефон</button></div>'});
+  return S;
+}
+function openYearStory(y){
+  const d = yearData(y);
+  if(!d.books.length){ toast("У " + y + " ще немає прочитаних книжок"); return; }
+  const slides = yearSlides(d);
+  $("modalRoot").innerHTML = '<div class="story" id="story">'
+    + '<div class="st-bars">' + slides.map(() => '<i><b></b></i>').join("") + '</div>'
+    + '<button class="st-x" id="stClose" aria-label="Закрити">' + XICON.replace('class="x"', '') + '</button>'
+    + slides.map((sl, i) => '<section class="st-slide" data-i="' + i + '" style="--bg:' + sl.bg + '">' + sl.html + '</section>').join("")
+    + '</div>';
+  history.pushState({app:"sheet"}, "");
+  let cur = -1;
+  const go = i => {
+    if(i < 0) i = 0;
+    if(i >= slides.length){ closeModal(); return; }
+    cur = i;
+    document.querySelectorAll("#story .st-slide").forEach((el, k) => el.classList.toggle("on", k === i));
+    document.querySelectorAll("#story .st-bars i").forEach((el, k) => el.className = k < i ? "done" : k === i ? "now" : "");
+    const slide = document.querySelector('#story .st-slide[data-i="' + i + '"]');
+    slide.querySelectorAll("[data-count]").forEach(el => countUp(el, +el.dataset.count));
+    if(i === 0 && $("stOwl") && !$("stOwl").firstChild){ const o = owlEl({h:150}); $("stOwl").appendChild(o); setTimeout(() => owlAct(o, "cheer"), 500); }
+  };
+  $("stClose").onclick = closeModal;
+  $("story").addEventListener("click", e => {
+    if(e.target.closest("button")) return;
+    if(e.clientX < innerWidth * 0.3) go(cur - 1); else go(cur + 1);
+  });
+  $("stShare").onclick = () => exportYearImage(d, true);
+  $("stSave").onclick = () => exportYearImage(d, false);
+  go(0);
+}
+function countUp(el, to){
+  if(!motionOK() || to < 2){ el.textContent = to; return; }
+  const t0 = performance.now(), dur = Math.min(1400, 500 + to * 40);
+  const step = t => { const k = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if(k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+/* картинка для сторіз 1080×1920 */
+function loadImg(src, cors){
+  return new Promise(res => { const im = new Image(); if(cors) im.crossOrigin = "anonymous"; im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+}
+async function coverForCanvas(b){
+  const src = bookCover(b); if(!src) return null;
+  if(src.startsWith("data:")) return loadImg(src);
+  /* обкладинки з каталогів беремо через відкритий проксі картинок — інакше браузер не дасть зберегти малюнок */
+  return (await loadImg(src + (src.includes("?") ? "&" : "?") + "cors=1", true))
+      || loadImg("https://wsrv.nl/?url=" + encodeURIComponent(src.replace(/^https?:\/\//, "")) + "&w=420&output=jpg", true);
+}
+function wrapText(ctx, text, maxW){
+  const words = String(text).split(/\s+/), lines = []; let line = "";
+  words.forEach(w => { const t = line ? line + " " + w : w; if(ctx.measureText(t).width > maxW && line){ lines.push(line); line = w; } else line = t; });
+  if(line) lines.push(line);
+  return lines;
+}
+async function exportYearImage(d, share){
+  const btn = share ? $("stShare") : $("stSave"), label = btn.textContent;
+  btn.disabled = true; btn.textContent = "Малюю…";
+  try{
+    await Promise.all(['700 200px "Playfair Display"', 'italic 600 60px "Playfair Display"', '800 40px "Manrope"', '400 40px "Bad Script"', '400 30px "PT Mono"'].map(f => document.fonts.load(f).catch(() => {})));
+    const W = 1080, H = 1920, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const x = cv.getContext("2d");
+    const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#22463b"); g.addColorStop(1, "#142a23");
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    /* рейки на стіні */
+    x.fillStyle = "rgba(255,255,255,.035)";
+    for(let i = 30; i < W; i += 76){ x.fillRect(i, 0, 2, H); x.fillRect(i + 6, 0, 1, H); }
+    const cream = "#fff6e4", brass = "#e2bd68";
+    x.textAlign = "center"; x.fillStyle = brass;
+    x.font = '400 30px "PT Mono", monospace'; x.fillText("Ч И Т А Ц Ь К И Й   Р І К", W / 2, 150);
+    x.fillStyle = cream; x.font = '700 230px "Playfair Display", serif'; x.fillText(String(d.y), W / 2, 380);
+    const n = d.books.length;
+    x.font = 'italic 600 64px "Playfair Display", serif';
+    x.fillText(n + " " + plural(n, "книжка", "книжки", "книжок") + (d.goal ? " · " + Math.min(100, Math.round(n / d.goal * 100)) + "% мети" : ""), W / 2, 480);
+    /* обкладинки: 3×3 */
+    const list = d.books.slice(0, 9), cols = 3, cw = 250, ch = 366, gap = 34;
+    const gw = cols * cw + (cols - 1) * gap, gx = (W - gw) / 2, gy = 560;
+    const rows = Math.ceil(list.length / cols);
+    const imgs = await Promise.all(list.map(coverForCanvas));
+    list.forEach((b, i) => {
+      const r = Math.floor(i / cols), c = i % cols;
+      const inRow = Math.min(cols, list.length - r * cols), off = (cols - inRow) * (cw + gap) / 2;
+      const bx = gx + off + c * (cw + gap), by = gy + r * (ch + gap);
+      x.save(); x.shadowColor = "rgba(0,0,0,.45)"; x.shadowBlur = 26; x.shadowOffsetY = 12;
+      x.fillStyle = coverColor(b); x.fillRect(bx, by, cw, ch); x.restore();
+      const im = imgs[i];
+      if(im){
+        const ar = im.naturalWidth / im.naturalHeight, tar = cw / ch;
+        let sw = im.naturalWidth, sh = im.naturalHeight, sx = 0, sy = 0;
+        if(ar > tar){ sw = sh * tar; sx = (im.naturalWidth - sw) / 2; } else { sh = sw / tar; sy = (im.naturalHeight - sh) / 2; }
+        x.drawImage(im, sx, sy, sw, sh, bx, by, cw, ch);
+      } else {
+        x.fillStyle = "rgba(0,0,0,.18)"; x.fillRect(bx, by, 14, ch);
+        x.fillStyle = cream; x.textAlign = "left"; x.font = '700 30px "Playfair Display", serif';
+        wrapText(x, b.title, cw - 50).slice(0, 5).forEach((ln, k) => x.fillText(ln, bx + 30, by + 60 + k * 38));
+        x.textAlign = "center";
+      }
+    });
+    let ty = gy + Math.max(1, rows) * (ch + gap) + 40;
+    const facts = [];
+    if(d.genres.length) facts.push(["жанр року", d.genres[0][0]]);
+    if(d.rated.length) facts.push(["книжка року", "«" + d.rated[0].title + "»"]);
+    if(d.bestM >= 0 && d.dated.length >= 2) facts.push(["найбільше читала", "у " + MONTHS_IN[d.bestM]]);
+    facts.slice(0, 3).forEach(([k, v]) => {
+      x.fillStyle = brass; x.font = '400 28px "PT Mono", monospace'; x.fillText(k.toUpperCase(), W / 2, ty);
+      x.fillStyle = cream; x.font = '800 44px "Manrope", sans-serif';
+      const lines = wrapText(x, v, W - 160).slice(0, 2);
+      lines.forEach((ln, k2) => x.fillText(ln, W / 2, ty + 56 + k2 * 52));
+      ty += 56 + lines.length * 52 + 34;
+    });
+    x.fillStyle = "rgba(255,246,228,.7)"; x.font = '400 40px "Bad Script", cursive';
+    x.fillText("ex libris · Бібліотека", W / 2, H - 80);
+    const blob = await new Promise(r => cv.toBlob(r, "image/png"));
+    if(!blob) throw new Error("no blob");
+    const file = new File([blob], "chytatskyi-rik-" + d.y + ".png", {type:"image/png"});
+    if(share && navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:"Мій читацький " + d.y}); }catch(e){}
+    } else {
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      toast(share ? "Поділитися звідси не вийшло — картинку збережено" : "Картинку збережено");
+    }
+  }catch(e){
+    toast("Не вдалося намалювати картинку");
+  }
+  btn.disabled = false; btn.textContent = label;
 }
 
 function openGoal(){
@@ -1858,12 +2496,14 @@ function syncHistory(p){
 }
 
 /* ═══ ШТОРКИ ═══ */
+function clearModal(){ returnLentBook(); $("modalRoot").innerHTML = ""; }
 function closeModal(){
   if(!$("modalRoot").innerHTML) return;
-  $("modalRoot").innerHTML = "";
+  clearModal();
   if(history.state && history.state.app === "sheet" && !histBusy){ histBusy = true; popGuard++; history.back(); }
 }
 function openSheet(html, center){
+  if(lentBook) returnLentBook(true);
   $("modalRoot").innerHTML = '<div class="sheet-wrap" id="bd"><div class="sheet-bg"></div>'
     + '<div class="sheet'+(center?" center":"")+'" id="sheet"><div class="grab"></div>'+html+'</div></div>';
   $("bd").onclick = e => { if(e.target.id==="bd" || e.target.classList.contains("sheet-bg")) closeModal(); };
@@ -2097,6 +2737,7 @@ function openBookForm(existing){
   let readMode = existing && b.status === "read" ? (b.readAt ? "dates" : b.readYearOnly ? "year" : "none")
     : existing && b.status === "reading" ? "dates" : state.dateMode;
   let startMode = existing && b.status === "reading" && !b.startedAt ? "none" : "dates";
+  let ownMode = b.own === "buy" ? "buy" : "home";   /* для запланованих: є вдома чи хочу купити */
   function showCover(src){
     const p = $("fCoverPreview");
     if(src){ p.style.backgroundImage = "url("+src+")"; p.classList.remove("hidden"); } else p.classList.add("hidden");
@@ -2104,7 +2745,12 @@ function openBookForm(existing){
   showCover(cover || coverUrl);
   function renderDates(){
     const box = $("datesBox");
-    if(status === "planned"){ box.innerHTML = ""; return; }
+    if(status === "planned"){
+      box.innerHTML = '<label class="lbl mono">Книжка</label><div class="seg seg-sm" id="segOwn">'
+        + [["home","Є вдома"],["buy","Хочу купити"]].map(([k,v]) => '<button data-o="'+k+'" class="'+(ownMode===k?"on":"")+'">'+v+'</button>').join("") + '</div>';
+      box.querySelectorAll("[data-o]").forEach(btn => btn.onclick = () => { ownMode = btn.dataset.o; renderDates(); });
+      return;
+    }
     const isRead = status === "read", mode = isRead ? readMode : startMode;
     const modes = isRead ? [["dates","Знаю дати"],["year","Лише рік"],["none","Не памʼятаю"]] : [["dates","Знаю дату"],["none","Не памʼятаю"]];
     let h = '<label class="lbl mono">'+(isRead ? "Коли читала" : "Коли почала")+'</label>'
@@ -2198,7 +2844,13 @@ function openBookForm(existing){
   };
   function applyFormDates(t){
     const clear = (...ks) => ks.forEach(k => delete t[k]);
-    if(status === "planned"){ clear("readAt", "readYearOnly", "dateRead", "startedAt"); return; }
+    const wasBuy = t.own === "buy";
+    if(status === "planned"){
+      clear("readAt", "readYearOnly", "dateRead", "startedAt");
+      if(ownMode === "buy") t.own = "buy"; else { clear("own"); if(wasBuy) t.boughtAt = new Date().toISOString(); }
+      return;
+    }
+    if(wasBuy){ clear("own"); t.boughtAt = new Date().toISOString(); }   /* почала читати — отже, вже купила */
     if(status === "reading"){
       clear("readAt", "readYearOnly", "dateRead");
       if(startMode === "dates") t.startedAt = fromYmd(started || today); else clear("startedAt");
@@ -2241,11 +2893,14 @@ function openBookForm(existing){
     renderAll(); scheduleSave();
   };
 }
+function gotBook(b){ if(b.own === "buy"){ delete b.own; b.boughtAt = new Date().toISOString(); } }
 function startReading(b){
+  gotBook(b);
   b.status = "reading"; b.startedAt = new Date().toISOString();
   renderAll(); scheduleSave(); toast("Гарного читання! " + state.mascotName + " читає з тобою");
 }
 function markRead(b, iso){
+  gotBook(b);
   b.status = "read";
   b.readAt = iso || new Date().toISOString();
   b.dateRead = longDate(b.readAt) + " " + new Date(b.readAt).getFullYear();
@@ -2344,7 +2999,7 @@ function celebrate(book){
 }
 
 /* ═══ КАТАЛОЖНА КАРТКА КНИГИ ═══ */
-function openDetail(id){
+function openDetail(id, fromEl){
   const b = state.books.find(x=>x.id===id); if(!b) return;
   const c = coverColor(b), cov = bookCover(b);
   const no = String(b.no || state.books.indexOf(b) + 1).padStart(4, "0");
@@ -2361,12 +3016,14 @@ function openDetail(id){
     + '</div><div style="flex:1;min-width:0">'
     + '<h3 class="cat-title">'+esc(b.title)+'</h3>'
     + (b.author ? '<div class="cat-author">'+esc(b.author)+'</div>' : '')
-    + '<div class="fields">' + fld(tags.length > 1 ? "ЖАНРИ" : "ЖАНР", tags.join(", ").toLowerCase()) + fld("СТАТУС", STATUSES[b.status].toLowerCase()) + fld("ПОЧАЛА", startedTxt)
+    + '<div class="fields">' + fld(tags.length > 1 ? "ЖАНРИ" : "ЖАНР", tags.join(", ").toLowerCase()) + fld("СТАТУС", STATUSES[b.status].toLowerCase())
+    + (b.status === "planned" ? fld("КНИЖКА", b.own === "buy" ? "хочу купити" : "є вдома") : "") + fld("ПОЧАЛА", startedTxt)
     + (b.status==="read" ? fld(b.readAt ? "ДОЧИТАЛА" : "РІК", when) + fld("ЧИТАЛА", daysTxt) : "") + '</div>'
     + (b.status === "read" ? '<div class="cat-stamp"><span class="stamp">ПРОЧИТАНО'+(when ? '<small>'+esc(when)+'</small>' : '')+'</span></div>' : '')
     + '</div>'
     + '</div>'
     + '<div class="hand-note">'+(b.note ? esc(b.note) : '<span style="color:var(--muted)">Тут будуть твої враження…</span>')+'</div>'
+    + '<div class="quotes-box" id="dQuotes"></div>'
     + (b.status === "read"
         ? '<div class="rating-box"><div class="row-sp"><span class="mono">Оцінка</span>'
           + (b.rating ? '<span class="mono">'+b.rating+' / 10 · '+RATE_WORDS[b.rating]+'</span>' : '')
@@ -2374,6 +3031,7 @@ function openDetail(id){
           + traitsMini(b.traits)
           + '<button class="btn soft sm wide" id="dRate" style="margin-top:10px">'+(b.rating || (b.traits && Object.keys(b.traits).length) ? "Змінити оцінку" : "Оцінити книгу")+'</button></div>'
         : '')
+    + (b.status==="planned" && b.own==="buy" ? '<button class="btn soft wide" id="dBought" style="margin-bottom:8px">Купила — тепер удома</button>' : '')
     + (b.status!=="read" ? '<button class="btn wide" id="dRead">Прочитала · +'+COINS_PER_BOOK+' ◈</button>' : '')
     + (b.status==="planned" ? '<button class="btn ghost wide" style="margin-top:8px" id="dReading">Почала читати</button>' : '')
     + (cov ? '' : '<button class="btn soft wide" id="dFindCover" style="margin-top:8px">Знайти обкладинку в каталозі</button>')
@@ -2381,6 +3039,10 @@ function openDetail(id){
     + '<span class="hole"></span>'
   );
   if(cov && !coverBox(b, 102, 150)) fitCover($("dCover"), b, 102, 150);
+  renderDetailQuotes(b);
+  if(fromEl) flyBookToCard(fromEl, b);
+  const bo = $("dBought");
+  if(bo) bo.onclick = () => { gotBook(b); closeModal(); renderAll(); scheduleSave(); toast("Ура, нова книжка вдома!"); };
   const rd = $("dRead");
   if(rd) rd.onclick = ()=>{ markRead(b); closeModal(); celebrate(b); renderAll(); scheduleSave(); };
   const rg = $("dReading");
@@ -2396,6 +3058,167 @@ function openDetail(id){
     closeModal(); renderAll(); scheduleSave(); toast("Книгу прибрано з полиці");
   };
 }
+
+/* ═══ КНИЖКА ВИЇЖДЖАЄ З ПОЛИЦІ ═══
+   Тап по книжці: вона висувається з полиці й перелітає в обкладинку каталожної картки.
+   Поки картка відкрита, на полиці лишається порожнє місце; при закритті книжка повертається. */
+let lentBook = null;
+const motionOK = () => !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+function sheetOffset(){
+  const sh = $("sheet"); if(!sh) return {x:0, y:0};
+  const t = getComputedStyle(sh).transform;
+  if(!t || t === "none") return {x:0, y:0};
+  try{ const m = new DOMMatrixReadOnly(t); return {x:m.m41, y:m.m42}; }catch(e){ return {x:0, y:0}; }
+}
+function flightClone(fromNode, rect){
+  const fly = fromNode.cloneNode(true);
+  fly.removeAttribute("id"); fly.classList.remove("lent", "drag-src", "nudge-l", "nudge-r", "landed");
+  fly.classList.add("fly-book");
+  Object.assign(fly.style, {left:rect.left + "px", top:rect.top + "px", width:rect.width + "px", height:rect.height + "px"});
+  document.body.appendChild(fly);
+  return fly;
+}
+function flyBookToCard(srcEl, b){
+  const target = $("dCover");
+  if(!target || !srcEl || !srcEl.isConnected || !motionOK() || !target.animate) return;
+  const fr = srcEl.getBoundingClientRect();
+  if(fr.bottom < 0 || fr.top > innerHeight) return;
+  const off = sheetOffset(), tr0 = target.getBoundingClientRect();
+  const to = {left:tr0.left - off.x, top:tr0.top - off.y, width:tr0.width, height:tr0.height};
+  const fly = flightClone(target, to);
+  target.style.visibility = "hidden";
+  srcEl.classList.add("lent");
+  lentBook = {el:srcEl, id:b.id};
+  const sx = fr.width / to.width, sy = fr.height / to.height, dx = fr.left - to.left, dy = fr.top - to.top;
+  const a = fly.animate([
+    {transform:"translate("+dx+"px,"+dy+"px) scale("+sx+","+sy+")", boxShadow:"2px 3px 9px rgba(0,0,0,.25)"},
+    {transform:"translate("+dx+"px,"+(dy - 30)+"px) scale("+(sx*1.14)+","+(sy*1.14)+") rotate(-5deg)", boxShadow:"8px 18px 28px rgba(0,0,0,.35)", offset:.3},
+    {transform:"none", boxShadow:"3px 6px 14px rgba(0,0,0,.3)"}
+  ], {duration:600, easing:"cubic-bezier(.34,.9,.32,1)"});
+  const done = () => { target.style.visibility = ""; fly.remove(); };
+  a.onfinish = done; a.oncancel = done;
+}
+function returnLentBook(instant){
+  const lb = lentBook; lentBook = null;
+  if(!lb) return;
+  const el = lb.el, src = $("dCover");
+  const back = () => el.classList.remove("lent");
+  if(instant || !el.isConnected || !src || !motionOK() || !src.animate){ back(); return; }
+  const tr = el.getBoundingClientRect(), fr = src.getBoundingClientRect();
+  if(tr.bottom < 0 || tr.top > innerHeight || fr.width === 0){ back(); return; }
+  const fly = flightClone(src, {left:tr.left, top:tr.top, width:tr.width, height:tr.height});
+  const sx = fr.width / tr.width, sy = fr.height / tr.height;
+  const a = fly.animate([
+    {transform:"translate("+(fr.left - tr.left)+"px,"+(fr.top - tr.top)+"px) scale("+sx+","+sy+")"},
+    {transform:"translateY(-14px) scale(1.04) rotate(-2deg)", offset:.75},
+    {transform:"none"}
+  ], {duration:420, easing:"cubic-bezier(.4,.1,.3,1)"});
+  const done = () => { back(); fly.remove(); };
+  a.onfinish = done; a.oncancel = done;
+}
+
+/* ═══ ЦИТАТИ ═══ */
+const quotesOf = b => Array.isArray(b.quotes) ? b.quotes : [];
+function allQuotes(){
+  const out = [];
+  state.books.forEach(b => quotesOf(b).forEach(q => out.push({q, b})));
+  return out.sort((x, y) => String(y.q.at || "").localeCompare(String(x.q.at || "")));
+}
+function renderDetailQuotes(b){
+  const box = $("dQuotes"); if(!box) return;
+  const qs = quotesOf(b);
+  box.innerHTML = '<div class="row-sp"><span class="mono">Цитати' + (qs.length ? ' · ' + qs.length : '') + '</span>'
+    + '<button class="lnk" id="dQAdd">+ додати</button></div>'
+    + qs.map(q => '<blockquote class="q" data-q="'+q.id+'"><span>'+esc(q.t)+'</span><button class="q-x" data-qdel="'+q.id+'" aria-label="Прибрати цитату">×</button></blockquote>').join("")
+    + (qs.length ? '' : '<div class="small q-empty">Рядки, які хочеться запамʼятати, — сюди.</div>')
+    + '<div class="q-form hidden" id="dQForm"><textarea class="inp" id="dQText" rows="3" maxlength="600" placeholder="Перепиши рядок із книжки"></textarea>'
+    + '<div class="row" style="margin-top:8px"><button class="btn sm" id="dQSave">Зберегти</button><button class="btn ghost sm" id="dQCancel">Скасувати</button></div></div>';
+  $("dQAdd").onclick = () => { $("dQForm").classList.remove("hidden"); $("dQAdd").classList.add("hidden"); $("dQText").focus(); };
+  $("dQCancel").onclick = () => renderDetailQuotes(b);
+  $("dQSave").onclick = () => {
+    const t = $("dQText").value.trim().replace(/^[«"„“]+|[»"”]+$/g, "").trim();
+    if(!t){ $("dQText").focus(); return; }
+    if(!Array.isArray(b.quotes)) b.quotes = [];
+    b.quotes.push({id:uid("q"), t, at:new Date().toISOString()});
+    renderDetailQuotes(b); renderQuotesCard(); scheduleSave(); toast("Цитату збережено");
+  };
+  box.querySelectorAll("[data-qdel]").forEach(btn => btn.onclick = () => {
+    if(btn.dataset.sure !== "1"){ btn.dataset.sure = "1"; btn.textContent = "прибрати?"; btn.classList.add("sure"); return; }
+    b.quotes = quotesOf(b).filter(q => q.id !== btn.dataset.qdel);
+    renderDetailQuotes(b); renderQuotesCard(); scheduleSave();
+  });
+}
+function renderQuotesCard(){
+  const n = allQuotes().length;
+  if(!$("quotesN")) return;
+  $("quotesN").textContent = n ? n + " " + plural(n,"цитата","цитати","цитат") : "";
+  $("quotesHint").textContent = n ? "Твої улюблені рядки з усіх книжок. Іноді " + state.mascotName + " їх пригадує." : "Цитати додаються в картці книжки: «Цитати → + додати».";
+  $("quotesOpen").disabled = !n;
+}
+function openQuotes(){
+  const list = allQuotes();
+  if(!list.length){ toast("Поки жодної цитати"); return; }
+  openSheet(head("Мої цитати", list.length + " " + plural(list.length,"цитата","цитати","цитат"))
+    + '<div class="q-all">' + list.map(({q, b}) => '<figure class="q-card"><blockquote>'+esc(q.t)+'</blockquote>'
+      + '<figcaption><button class="lnk" data-qb="'+b.id+'">«'+esc(b.title)+'»</button>'+(b.author ? ' · '+esc(b.author) : '')+'</figcaption></figure>').join("")
+    + '</div>');
+  document.querySelectorAll("#modalRoot [data-qb]").forEach(el => el.onclick = () => { const id = el.dataset.qb; closeModal(); setTimeout(() => openDetail(id), 90); });
+}
+
+/* ═══ СОВА ОБИРАЄ НАСТУПНУ КНИЖКУ ═══ */
+const OWL_DICE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.1" fill="currentColor"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/></svg>';
+let lastOwlPick = null;
+function openOwlPick(){
+  const planned = state.books.filter(b => b.status === "planned");
+  const home = planned.filter(b => b.own !== "buy");
+  const pool = home.length ? home : planned;
+  if(!pool.length){ toast("У планах поки порожньо"); return; }
+  openSheet('<div class="pick">'
+    + '<div class="pick-owl" id="pickOwl"></div>'
+    + '<div class="pick-reel"><div class="pick-cover" id="pickCover"></div></div>'
+    + '<div class="pick-title" id="pickTitle">&nbsp;</div>'
+    + '<div class="pick-note small" id="pickNote">' + (home.length ? esc(state.mascotName) + ' тасує книжки, які є вдома…' : 'Удома з планів нічого — обираю з тих, що хочеш купити…') + '</div>'
+    + '<div class="pick-btns hidden" id="pickBtns"><button class="btn wide" id="pickGo">Почати читати</button>'
+    + '<div class="row" style="margin-top:8px"><button class="btn ghost sm" id="pickAgain">Ще раз</button><button class="btn ghost sm" id="pickCard">Картка</button></div></div>'
+    + '</div>', true);
+  const owl = owlEl({h:104});
+  $("pickOwl").appendChild(owl);
+  let chosen = null;
+  const show = (b, final) => {
+    const c = $("pickCover"); if(!c) return;
+    c.outerHTML = miniCover(b, "pick-cover").replace('class="pick-cover"', 'class="pick-cover' + (final ? ' landed' : ' flick') + '" id="pickCover"');
+    $("pickTitle").innerHTML = final ? '«' + esc(b.title) + '»' + (b.author ? '<small>' + esc(b.author) + '</small>' : '') : '&nbsp;';
+  };
+  const spin = () => {
+    $("pickBtns").classList.add("hidden");
+    owlAct(owl, "ruffle");
+    const others = pool.length > 1 ? pool.filter(b => b.id !== lastOwlPick) : pool;
+    chosen = others[Math.floor(Math.random() * others.length)];
+    const steps = Math.min(18, 9 + pool.length * 2);
+    let i = 0, prev = null;
+    const tick = () => {
+      if(!$("pickCover")) return;   /* шторку закрили */
+      i++;
+      if(i >= steps){
+        show(chosen, true); lastOwlPick = chosen.id;
+        owlAct(owl, "hop");
+        $("pickNote").textContent = pool.length === 1 ? "Вибір невеликий — але чудовий." : PICK_LINES[Math.floor(Math.random() * PICK_LINES.length)];
+        $("pickBtns").classList.remove("hidden");
+        return;
+      }
+      let b = pool[Math.floor(Math.random() * pool.length)];
+      if(pool.length > 1) while(b === prev) b = pool[Math.floor(Math.random() * pool.length)];
+      prev = b; show(b, false);
+      setTimeout(tick, 55 + Math.pow(i / steps, 2.6) * 380);
+    };
+    tick();
+  };
+  spin();
+  $("pickAgain").onclick = spin;
+  $("pickGo").onclick = () => { closeModal(); startReading(chosen); };
+  $("pickCard").onclick = () => { const id = chosen.id; closeModal(); setTimeout(() => openDetail(id), 90); };
+}
+const PICK_LINES = ["Ось ця! Відчуваю — буде добре.", "Совине чуття каже: саме вона.", "Мені здається, вона вже давно чекає.", "Ідеально під настрій. Перевіримо?"];
 
 function openCoverSearch(id){
   const b = state.books.find(x=>x.id===id); if(!b) return;
@@ -2552,7 +3375,7 @@ window.addEventListener("popstate", ()=>{
     if(histPending !== null){ const p = histPending; histPending = null; syncHistory(p); }
     return;
   }
-  if($("modalRoot").innerHTML){ $("modalRoot").innerHTML = ""; return; }
+  if($("modalRoot").innerHTML){ clearModal(); return; }
   if(currentPage !== "shelf") setPage("shelf", true);
 });
 
